@@ -1,0 +1,2091 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peliharaan AI - Hewan Peliharaanmu, Hidup di Dunia Digital</title>
+    <meta name="description" content="Your real pet. Digitally alive. Create an AI-powered digital twin of your pet.">
+    <style>
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --primary: #FF6B6B;
+            --primary-dark: #EE5A5A;
+            --secondary: #FFF5E6;
+            --accent: #4ECDC4;
+            --accent-dark: #3DBDB4;
+            --bg-gradient-start: #FFF5E6;
+            --bg-gradient-end: #FFE4D1;
+            --text: #2D3436;
+            --text-light: #636E72;
+            --white: #FFFFFF;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-strong: rgba(0, 0, 0, 0.15);
+            --success: #00B894;
+            --warning: #FDCB6E;
+            --error: #D63031;
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== LAYOUT ===== */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== TYPOGRAPHY ===== */
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: var(--text);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            color: var(--text);
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-light);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: var(--white);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* ===== FORMS ===== */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .label-en {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="password"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E8E8E8;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .input-hint {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* ===== SLIDER ===== */
+        .slider-container {
+            margin-top: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #E8E8E8;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* ===== TOGGLE ===== */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 32px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #E8E8E8;
+            border-radius: 32px;
+            transition: var(--transition);
+        }
+
+        .toggle-slider::before {
+            content: "";
+            position: absolute;
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background: var(--white);
+            border-radius: 50%;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: var(--accent);
+        }
+
+        .toggle input:checked + .toggle-slider::before {
+            transform: translateX(28px);
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 24px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+
+        .hero-tagline {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 40px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* ===== PHOTO UPLOAD ===== */
+        .upload-zone {
+            border: 3px dashed var(--accent);
+            border-radius: var(--border-radius);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(78, 205, 196, 0.05);
+        }
+
+        .upload-zone:hover {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: var(--accent-dark);
+        }
+
+        .upload-zone.dragover {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: var(--primary);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .photo-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            background: var(--error);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== LOADING ===== */
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-paw {
+            font-size: 4rem;
+            animation: pawPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pawPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--text);
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .loading-steps {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--white);
+            border-radius: var(--border-radius-sm);
+            opacity: 0.5;
+            transition: var(--transition);
+        }
+
+        .loading-step.active {
+            opacity: 1;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .loading-step.completed {
+            opacity: 1;
+            color: var(--success);
+        }
+
+        .step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .loading-step.completed .step-icon {
+            background: var(--success);
+        }
+
+        /* ===== TWIN PROFILE ===== */
+        .twin-card {
+            background: linear-gradient(135deg, var(--white) 0%, var(--secondary) 100%);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 8px 30px var(--shadow-strong);
+            text-align: center;
+        }
+
+        .twin-avatar {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .twin-name {
+            font-size: 2rem;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .twin-species {
+            font-size: 1rem;
+            color: var(--accent-dark);
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .twin-backstory {
+            font-style: italic;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .twin-id {
+            display: inline-block;
+            background: var(--text);
+            color: var(--white);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .personality-type {
+            font-size: 1rem;
+            color: var(--accent-dark);
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding: 8px 16px;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .hybrid-badge {
+            background: linear-gradient(135deg, #FDCB6E 0%, #E17055 100%);
+            color: var(--white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* ===== STATS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .stat-item {
+            background: var(--white);
+            padding: 16px;
+            border-radius: var(--border-radius-sm);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .stat-bar {
+            height: 8px;
+            background: #E8E8E8;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .stat-fill.cuteness { background: linear-gradient(90deg, #FF6B6B, #FF8E8E); }
+        .stat-fill.energy { background: linear-gradient(90deg, #FDCB6E, #FFE082); }
+        .stat-fill.mischief { background: linear-gradient(90deg, #A29BFE, #B8B3FF); }
+        .stat-fill.wisdom { background: linear-gradient(90deg, #74B9FF, #A3D1FF); }
+        .stat-fill.loyalty { background: linear-gradient(90deg, #00B894, #55EFC4); }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* ===== INTERACTION ZONE ===== */
+        .interaction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .interaction-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 20px 12px;
+            background: var(--white);
+            border: 2px solid transparent;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .interaction-btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+
+        .interaction-icon {
+            font-size: 2rem;
+        }
+
+        .interaction-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .talk-input-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .talk-input-container input {
+            flex: 1;
+        }
+
+        /* ===== RESPONSE BUBBLE ===== */
+        .response-bubble {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px var(--shadow);
+            position: relative;
+        }
+
+        .response-bubble::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 30px;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid var(--white);
+        }
+
+        .response-text {
+            font-size: 1.1rem;
+            color: var(--text);
+            font-style: italic;
+        }
+
+        .response-meta {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 12px;
+            text-align: right;
+        }
+
+        /* ===== CERTIFICATE ===== */
+        .certificate {
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFF5E6 100%);
+            border: 4px solid var(--accent);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .certificate::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: calc(var(--border-radius) - 8px);
+            pointer-events: none;
+        }
+
+        .certificate-title {
+            font-size: 1.5rem;
+            color: var(--accent-dark);
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .certificate-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+
+        .certificate-content {
+            text-align: left;
+            margin: 30px 0;
+        }
+
+        .cert-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+        }
+
+        .cert-label {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .cert-value {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .certificate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--text);
+            color: var(--white);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            margin-top: 20px;
+        }
+
+        /* ===== SHARE SECTION ===== */
+        .share-options {
+            display: grid;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .share-card {
+            background: var(--white);
+            border-radius: var(--border-radius-sm);
+            padding: 16px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .share-platform {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .share-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .share-btn {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* ===== NAVIGATION ===== */
+        .nav-progress {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #E8E8E8;
+            transition: var(--transition);
+        }
+
+        .nav-dot.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .nav-dot.completed {
+            background: var(--success);
+        }
+
+        /* ===== ERROR MESSAGE ===== */
+        .error-message {
+            background: rgba(214, 48, 49, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 12px 16px;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 20px;
+        }
+
+        /* ===== SUCCESS MESSAGE ===== */
+        .success-message {
+            background: rgba(0, 184, 148, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 12px 16px;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 20px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            h1 { font-size: 2rem; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero-tagline { font-size: 1.2rem; }
+            .btn { padding: 12px 20px; }
+            .card { padding: 20px; }
+            .certificate { padding: 24px; }
+            .interaction-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .certificate { border: 2px solid #000; page-break-inside: avoid; }
+        }
+
+        /* ===== HIDDEN FILE INPUT ===== */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* ===== MULTI-INPUT ROW ===== */
+        .multi-input {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        /* ===== TIME INPUT ROW ===== */
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ===== SPECIAL ABILITY ===== */
+        .special-ability {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        /* ===== MOOD INDICATOR ===== */
+        .mood-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* ===== QUOTE BOX ===== */
+        .quote-box {
+            background: var(--white);
+            border-left: 4px solid var(--primary);
+            padding: 16px 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: var(--text);
+        }
+
+        /* ===== RAMADAN WISH ===== */
+        .ramadan-wish {
+            background: linear-gradient(135deg, #00B894 0%, #00CEC9 100%);
+            color: var(--white);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+        }
+
+        .ramadan-wish-title {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        /* ===== MEME CAPTION ===== */
+        .meme-caption {
+            background: #2D3436;
+            color: var(--white);
+            padding: 16px 20px;
+            border-radius: var(--border-radius-sm);
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Progress -->
+        <div class="nav-progress no-print" id="navProgress">
+            <div class="nav-dot active" data-section="hero"></div>
+            <div class="nav-dot" data-section="apiKey"></div>
+            <div class="nav-dot" data-section="upload"></div>
+            <div class="nav-dot" data-section="form"></div>
+            <div class="nav-dot" data-section="generating"></div>
+            <div class="nav-dot" data-section="profile"></div>
+            <div class="nav-dot" data-section="interact"></div>
+            <div class="nav-dot" data-section="certificate"></div>
+            <div class="nav-dot" data-section="share"></div>
+        </div>
+
+        <!-- Section 1: Hero -->
+        <section class="section active" id="hero">
+            <div class="hero">
+                <div class="hero-logo">
+                    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="60" cy="60" r="55" fill="url(#grad1)"/>
+                        <ellipse cx="40" cy="45" rx="12" ry="15" fill="#2D3436"/>
+                        <ellipse cx="80" cy="45" rx="12" ry="15" fill="#2D3436"/>
+                        <ellipse cx="40" cy="48" rx="5" ry="7" fill="white"/>
+                        <ellipse cx="80" cy="48" rx="5" ry="7" fill="white"/>
+                        <circle cx="42" cy="50" r="3" fill="#2D3436"/>
+                        <circle cx="82" cy="50" r="3" fill="#2D3436"/>
+                        <ellipse cx="60" cy="65" rx="8" ry="6" fill="#2D3436"/>
+                        <path d="M50 75 Q60 85 70 75" stroke="#2D3436" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        <path d="M25 55 Q15 45 20 35" stroke="#2D3436" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        <path d="M95 55 Q105 45 100 35" stroke="#2D3436" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF6B6B"/>
+                                <stop offset="100%" style="stop-color:#4ECDC4"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>Peliharaan AI</h1>
+                <p class="hero-tagline">Hewan peliharaanmu, hidup di dunia digital</p>
+                <p class="hero-subtitle">Your real pet. Digitally alive.</p>
+                <button class="btn btn-primary" onclick="showSection('apiKey')">
+                    <span>Buat Kembaran Digital</span>
+                    <span>Create Digital Twin</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Section 2: API Key Input -->
+        <section class="section" id="apiKey">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Konfigurasi API</h2>
+                    <p class="subtitle">API Configuration</p>
+                </div>
+                <div class="form-group">
+                    <label for="apiKeyInput">
+                        Alibaba Cloud Model Studio API Key
+                        <span class="label-en">Your API Key</span>
+                    </label>
+                    <input type="password" id="apiKeyInput" placeholder="sk-xxxxxxxxxxxxxxxx">
+                    <p class="input-hint">
+                        Dapatkan API key dari <a href="https://dashscope-intl.aliyuncs.com" target="_blank">Alibaba Cloud Model Studio</a>.
+                        <br>Get your API key from Alibaba Cloud Model Studio.
+                    </p>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveApiKey()">Simpan / Save</button>
+                    <button class="btn btn-secondary" onclick="showSection('hero')">Kembali / Back</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Photo Upload -->
+        <section class="section" id="upload">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Unggah Foto Peliharaan</h2>
+                    <p class="subtitle">Upload Pet Photos</p>
+                </div>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📷</div>
+                    <p class="upload-text">Klik atau seret foto ke sini</p>
+                    <p class="upload-hint">Click or drag photos here (1-3 photos, max 5MB each)</p>
+                    <p class="upload-hint">JPG, PNG, WEBP supported</p>
+                </div>
+                <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple onchange="handleFileSelect(event)">
+                <div class="photo-preview" id="photoPreview"></div>
+                <div class="btn-group" style="margin-top: 24px;">
+                    <button class="btn btn-primary" id="photoNextBtn" onclick="showSection('form')" disabled>Lanjut / Continue</button>
+                    <button class="btn btn-secondary" onclick="showSection('apiKey')">Kembali / Back</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Behavioral Form -->
+        <section class="section" id="form">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Ceritakan Tentang Peliharaanmu</h2>
+                    <p class="subtitle">Tell Us About Your Pet</p>
+                </div>
+                <form id="petForm" onsubmit="event.preventDefault(); submitForm();">
+                    <!-- Field 0: Owner Name -->
+                    <div class="form-group">
+                        <label for="ownerName">
+                            Nama Pemilik
+                            <span class="label-en">Owner Name</span>
+                        </label>
+                        <input type="text" id="ownerName" required placeholder="Contoh: Budi">
+                    </div>
+
+                    <!-- Field 1: Pet Name -->
+                    <div class="form-group">
+                        <label for="petName">
+                            Nama Peliharaan
+                            <span class="label-en">Pet Name</span>
+                        </label>
+                        <input type="text" id="petName" required placeholder="Contoh: Mochi">
+                    </div>
+
+                    <!-- Field 2: Species/Breed -->
+                    <div class="form-group">
+                        <label for="species">
+                            Jenis / Ras
+                            <span class="label-en">Species / Breed</span>
+                        </label>
+                        <input type="text" id="species" required placeholder="Contoh: Kucing Persia">
+                    </div>
+
+                    <!-- Field 3: Birth Date -->
+                    <div class="form-group">
+                        <label for="birthDate">
+                            Tanggal Lahir / Usia
+                            <span class="label-en">Birth Date / Age</span>
+                        </label>
+                        <input type="date" id="birthDate">
+                    </div>
+
+                    <!-- Field 4: Gender -->
+                    <div class="form-group">
+                        <label for="gender">
+                            Jenis Kelamin
+                            <span class="label-en">Gender</span>
+                        </label>
+                        <select id="gender" required>
+                            <option value="">Pilih / Select</option>
+                            <option value="male">Jantan / Male</option>
+                            <option value="female">Betina / Female</option>
+                            <option value="unknown">Tidak diketahui / Unknown</option>
+                        </select>
+                    </div>
+
+                    <!-- Field 5: 3 Unique Habits -->
+                    <div class="form-group">
+                        <label>
+                            3 Kebiasaan Unik
+                            <span class="label-en">3 Unique Habits</span>
+                        </label>
+                        <div class="multi-input">
+                            <input type="text" id="habit1" placeholder="Kebiasaan 1 / Habit 1">
+                            <input type="text" id="habit2" placeholder="Kebiasaan 2 / Habit 2">
+                            <input type="text" id="habit3" placeholder="Kebiasaan 3 / Habit 3">
+                        </div>
+                    </div>
+
+                    <!-- Field 6: Feeding Schedule -->
+                    <div class="form-group">
+                        <label>
+                            Jadwal Makan
+                            <span class="label-en">Feeding Schedule</span>
+                        </label>
+                        <div class="time-row">
+                            <input type="time" id="feedTime1">
+                            <input type="time" id="feedTime2">
+                        </div>
+                    </div>
+
+                    <!-- Field 7: Favorite Food -->
+                    <div class="form-group">
+                        <label for="favoriteFood">
+                            Makanan Favorit
+                            <span class="label-en">Favorite Food</span>
+                        </label>
+                        <input type="text" id="favoriteFood" placeholder="Contoh: Wet food rasa tuna">
+                    </div>
+
+                    <!-- Field 8: Favorite Spot -->
+                    <div class="form-group">
+                        <label for="favoriteSpot">
+                            Tempat Favorit
+                            <span class="label-en">Favorite Spot</span>
+                        </label>
+                        <input type="text" id="favoriteSpot" placeholder="Contoh: Di atas kulkas">
+                    </div>
+
+                    <!-- Field 9: Energy Level -->
+                    <div class="form-group">
+                        <label for="energyLevel">
+                            Level Energi
+                            <span class="label-en">Energy Level</span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="energyLevel" min="1" max="5" value="3" oninput="document.getElementById('energyValue').textContent = this.value">
+                            <div class="slider-labels">
+                                <span>Sangat malas / Very lazy</span>
+                                <span id="energyValue">3</span>
+                                <span>Super aktif / Super active</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Field 10: Social Behavior -->
+                    <div class="form-group">
+                        <label for="socialBehavior">
+                            Perilaku Sosial
+                            <span class="label-en">Social Behavior</span>
+                        </label>
+                        <select id="socialBehavior">
+                            <option value="">Pilih / Select</option>
+                            <option value="friendly">Sangat ramah dengan semua orang / Very friendly with everyone</option>
+                            <option value="shy-warm">Pemalu tapi lama-lama hangat / Shy but warms up</option>
+                            <option value="selective">Pilih-pilih orang / Selective with people</option>
+                            <option value="aloof">Penyendiri / Aloof</option>
+                        </select>
+                    </div>
+
+                    <!-- Field 11: Fears -->
+                    <div class="form-group">
+                        <label for="fears">
+                            Ketakutan / Benci
+                            <span class="label-en">Fears / Dislikes</span>
+                        </label>
+                        <input type="text" id="fears" placeholder="Contoh: Vacuum cleaner, hujan, kontak mata">
+                    </div>
+
+                    <!-- Field 12: Health Notes -->
+                    <div class="form-group">
+                        <label for="healthNotes">
+                            Catatan Kesehatan (Opsional)
+                            <span class="label-en">Health Notes (Optional)</span>
+                        </label>
+                        <input type="text" id="healthNotes" placeholder="Contoh: Alergi ayam">
+                    </div>
+
+                    <!-- Field 13: Indoor/Outdoor -->
+                    <div class="form-group">
+                        <label>
+                            Indoor / Outdoor
+                            <span class="label-en">Indoor / Outdoor</span>
+                        </label>
+                        <div class="toggle-container">
+                            <label class="toggle">
+                                <input type="checkbox" id="indoorOutdoor">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span id="indoorLabel">Indoor</span>
+                        </div>
+                    </div>
+
+                    <!-- Field 14: Owner Bond -->
+                    <div class="form-group">
+                        <label for="ownerBond">
+                            Ikatan dengan Pemilik
+                            <span class="label-en">Bond with Owner</span>
+                        </label>
+                        <select id="ownerBond">
+                            <option value="">Pilih / Select</option>
+                            <option value="very-attached">Sangat melekat, selalu ikut ke mana-mana / Very attached, follows everywhere</option>
+                            <option value="affectionate">Sayang tapi independen / Affectionate but independent</option>
+                            <option value="casual">Santai, sesekali minta perhatian / Casual, occasional attention</option>
+                            <option value="distant">Cukup jarang menunjukkan kasih sayang / Rarely shows affection</option>
+                        </select>
+                    </div>
+
+                    <!-- Field 15: One Word Personality -->
+                    <div class="form-group">
+                        <label for="personalityWord">
+                            Kepribadian 1 Kata
+                            <span class="label-en">Personality in 1 Word</span>
+                        </label>
+                        <input type="text" id="personalityWord" placeholder="Contoh: Chaos gremlin" required>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">Generate Kembaran Digital</button>
+                        <button type="button" class="btn btn-secondary" onclick="showSection('upload')">Kembali / Back</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Section 5: Generating -->
+        <section class="section" id="generating">
+            <div class="loading-container">
+                <div class="loading-paw">🐾</div>
+                <p class="loading-text">Sedang membuat kembaran digital...</p>
+                <p class="subtitle">Creating your digital twin...</p>
+                <div class="loading-steps">
+                    <div class="loading-step active" id="step1">
+                        <div class="step-icon">1</div>
+                        <span>Menganalisis foto / Analyzing photos</span>
+                    </div>
+                    <div class="loading-step" id="step2">
+                        <div class="step-icon">2</div>
+                        <span>Membaca kepribadian / Reading personality</span>
+                    </div>
+                    <div class="loading-step" id="step3">
+                        <div class="step-icon">3</div>
+                        <span>Membangun karakter / Building character</span>
+                    </div>
+                    <div class="loading-step" id="step4">
+                        <div class="step-icon">4</div>
+                        <span>Menyiapkan interaksi / Preparing interactions</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Twin Profile -->
+        <section class="section" id="profile">
+            <div class="twin-card">
+                <div class="twin-avatar" id="twinAvatar">🐱</div>
+                <h2 class="twin-name" id="twinName">-</h2>
+                <p class="twin-species" id="twinSpecies">-</p>
+                <div class="twin-id" id="twinId">-</div>
+                <div class="personality-type" id="personalityType">-</div>
+                <div class="hybrid-badge" id="hybridBadge" style="display: none;">⚡ HYBRID FUSION MODE</div>
+                <p class="twin-backstory" id="twinBackstory">-</p>
+                
+                <div class="mood-indicator" id="moodIndicator">
+                    <span>Mood:</span>
+                    <span id="currentMood">-</span>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Kelucuan / Cuteness</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill cuteness" id="statCuteness" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-value" id="valCuteness">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Energi / Energy</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill energy" id="statEnergy" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-value" id="valEnergy">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Nakal / Mischief</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill mischief" id="statMischief" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-value" id="valMischief">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Bijak / Wisdom</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill wisdom" id="statWisdom" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-value" id="valWisdom">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Setia / Loyalty</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill loyalty" id="statLoyalty" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-value" id="valLoyalty">0</div>
+                    </div>
+                </div>
+
+                <div class="special-ability" id="specialAbility">
+                    <strong>✨ Kemampuan Spesial:</strong> <span id="abilityText">-</span>
+                </div>
+
+                <div class="quote-box" id="firstWords">
+                    <strong>First Words:</strong> <span id="firstWordsText">-</span>
+                </div>
+
+                <div class="ramadan-wish" id="ramadanWish">
+                    <div class="ramadan-wish-title">🌙 Ramadan Wish</div>
+                    <div id="ramadanText">-</div>
+                </div>
+
+                <div class="meme-caption" id="memeCaption">
+                    <span id="memeText">-</span>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="showSection('interact')">Interaksi / Interact</button>
+                    <button class="btn btn-accent" onclick="showSection('certificate')">Sertifikat / Certificate</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Interaction Zone -->
+        <section class="section" id="interact">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Zona Interaksi</h2>
+                    <p class="subtitle">Interaction Zone</p>
+                    <div class="mood-indicator">
+                        <span>Mood:</span>
+                        <span id="interactMood">-</span>
+                    </div>
+                </div>
+
+                <div class="interaction-grid">
+                    <button class="interaction-btn" onclick="interact('feed')">
+                        <span class="interaction-icon">🍖</span>
+                        <span class="interaction-label">Kasih Makan<br>Feed</span>
+                    </button>
+                    <button class="interaction-btn" onclick="interact('play')">
+                        <span class="interaction-icon">🎮</span>
+                        <span class="interaction-label">Ajak Main<br>Play</span>
+                    </button>
+                    <button class="interaction-btn" onclick="toggleTalk()">
+                        <span class="interaction-icon">💬</span>
+                        <span class="interaction-label">Ngobrol<br>Talk</span>
+                    </button>
+                    <button class="interaction-btn" onclick="interact('cuddle')">
+                        <span class="interaction-icon">🤗</span>
+                        <span class="interaction-label">Peluk<br>Cuddle</span>
+                    </button>
+                    <button class="interaction-btn" onclick="interact('sleep')">
+                        <span class="interaction-icon">😴</span>
+                        <span class="interaction-label">Tidur<br>Sleep</span>
+                    </button>
+                </div>
+
+                <div class="talk-input-container" id="talkInput" style="display: none;">
+                    <input type="text" id="talkMessage" placeholder="Ketik pesan... / Type a message...">
+                    <button class="btn btn-primary" onclick="interact('talk')">Kirim / Send</button>
+                </div>
+
+                <div class="response-bubble" id="responseBubble" style="display: none;">
+                    <p class="response-text" id="responseText">-</p>
+                    <p class="response-meta" id="responseMeta">-</p>
+                </div>
+
+                <div class="btn-group" style="margin-top: 24px;">
+                    <button class="btn btn-secondary" onclick="showSection('profile')">Kembali ke Profil</button>
+                    <button class="btn btn-accent" onclick="showSection('certificate')">Sertifikat</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 8: Certificate -->
+        <section class="section" id="certificate">
+            <div class="certificate" id="certificateContent">
+                <div class="certificate-title">Sertifikat Identitas Digital</div>
+                <div class="certificate-subtitle">Digital Identity Certificate</div>
+                
+                <div class="certificate-content">
+                    <div class="cert-row">
+                        <span class="cert-label">Twin ID</span>
+                        <span class="cert-value" id="certId">-</span>
+                    </div>
+                    <div class="cert-row">
+                        <span class="cert-label">Pemilik / Owner</span>
+                        <span class="cert-value" id="certOwner">-</span>
+                    </div>
+                    <div class="cert-row">
+                        <span class="cert-label">Nama Asli / Real Name</span>
+                        <span class="cert-value" id="certRealName">-</span>
+                    </div>
+                    <div class="cert-row">
+                        <span class="cert-label">Nama Kembaran / Twin Name</span>
+                        <span class="cert-value" id="certTwinName">-</span>
+                    </div>
+                    <div class="cert-row">
+                        <span class="cert-label">Spesies / Species</span>
+                        <span class="cert-value" id="certSpecies">-</span>
+                    </div>
+                    <div class="cert-row">
+                        <span class="cert-label">Tanggal Dibuat / Created</span>
+                        <span class="cert-value" id="certDate">-</span>
+                    </div>
+                    <div class="cert-row">
+                        <span class="cert-label">Kepribadian / Personality</span>
+                        <span class="cert-value" id="certPersonality">-</span>
+                    </div>
+                    <div class="cert-row">
+                        <span class="cert-label">Sifat Utama / Key Traits</span>
+                        <span class="cert-value" id="certTraits">-</span>
+                    </div>
+                </div>
+
+                <div class="certificate-badge">
+                    <span>Powered by</span>
+                    <strong>Alibaba Cloud - Qwen AI</strong>
+                </div>
+            </div>
+
+            <div class="btn-group" style="margin-top: 24px;">
+                <button class="btn btn-primary" onclick="printCertificate()">Cetak / Print</button>
+                <button class="btn btn-accent" onclick="showSection('share')">Bagikan / Share</button>
+                <button class="btn btn-secondary" onclick="showSection('interact')">Kembali</button>
+            </div>
+        </section>
+
+        <!-- Section 9: Share -->
+        <section class="section" id="share">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Bagikan Kembaran Digitalmu</h2>
+                    <p class="subtitle">Share Your Digital Twin</p>
+                </div>
+
+                <div class="share-options">
+                    <div class="share-card">
+                        <div class="share-platform">WhatsApp</div>
+                        <div class="share-text" id="whatsappText">-</div>
+                        <button class="btn btn-primary share-btn" onclick="copyToClipboard('whatsappText')">Salin / Copy</button>
+                    </div>
+                    <div class="share-card">
+                        <div class="share-platform">Instagram</div>
+                        <div class="share-text" id="instagramText">-</div>
+                        <button class="btn btn-primary share-btn" onclick="copyToClipboard('instagramText')">Salin / Copy</button>
+                    </div>
+                    <div class="share-card">
+                        <div class="share-platform">X / Twitter</div>
+                        <div class="share-text" id="twitterText">-</div>
+                        <button class="btn btn-primary share-btn" onclick="copyToClipboard('twitterText')">Salin / Copy</button>
+                    </div>
+                </div>
+
+                <div class="btn-group" style="margin-top: 24px;">
+                    <button class="btn btn-secondary" onclick="showSection('certificate')">Kembali / Back</button>
+                    <button class="btn btn-primary" onclick="location.reload()">Buat Baru / Create New</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ===== STATE MANAGEMENT =====
+        // TRD Security Note: API key is NOT persisted (memory only)
+        const state = {
+            apiKey: '',
+            photos: [],
+            formData: {},
+            twinProfile: null,
+            currentStats: {},
+            conversationHistory: []
+        };
+
+        // ===== NAVIGATION =====
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update nav dots
+            const sections = ['hero', 'apiKey', 'upload', 'form', 'generating', 'profile', 'interact', 'certificate', 'share'];
+            const currentIndex = sections.indexOf(sectionId);
+            document.querySelectorAll('.nav-dot').forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index === currentIndex) dot.classList.add('active');
+                if (index < currentIndex) dot.classList.add('completed');
+            });
+
+            // Hide nav on hero
+            document.getElementById('navProgress').style.display = sectionId === 'hero' ? 'none' : 'flex';
+        }
+
+        // ===== API KEY =====
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (!key) {
+                alert('Masukkan API key / Please enter API key');
+                return;
+            }
+            state.apiKey = key;
+            // TRD Security: API key is NOT stored in localStorage (memory only)
+            showSection('upload');
+        }
+
+        // ===== PHOTO UPLOAD =====
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const photoPreview = document.getElementById('photoPreview');
+
+        // Drag and drop
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFileSelect(event) {
+            handleFiles(event.target.files);
+        }
+
+        function handleFiles(files) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            const maxSize = 5 * 1024 * 1024;
+            const maxPhotos = 3;
+            
+            let invalidFiles = [];
+            let validFiles = [];
+            
+            Array.from(files).forEach(file => {
+                if (state.photos.length + validFiles.length >= maxPhotos) {
+                    return;
+                }
+                if (!validTypes.includes(file.type)) {
+                    invalidFiles.push(`${file.name} (format tidak didukung / unsupported format)`);
+                } else if (file.size > maxSize) {
+                    invalidFiles.push(`${file.name} (terlalu besar / too large >5MB)`);
+                } else {
+                    validFiles.push(file);
+                }
+            });
+            
+            if (invalidFiles.length > 0) {
+                alert('Beberapa file tidak bisa diunggah:\n' + invalidFiles.join('\n') + '\n\nSupported: JPG, PNG, WEBP max 5MB');
+            }
+
+            validFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.photos.push(e.target.result);
+                    renderPhotoPreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderPhotoPreviews() {
+            photoPreview.innerHTML = state.photos.map((photo, index) => `
+                <div class="photo-item">
+                    <img src="${photo}" alt="Pet photo ${index + 1}">
+                    <button class="photo-remove" onclick="removePhoto(${index})">×</button>
+                </div>
+            `).join('');
+
+            document.getElementById('photoNextBtn').disabled = state.photos.length === 0;
+        }
+
+        function removePhoto(index) {
+            state.photos.splice(index, 1);
+            renderPhotoPreviews();
+        }
+
+        // ===== FORM SUBMISSION =====
+        function submitForm() {
+            if (state.photos.length === 0) {
+                alert('Unggah minimal 1 foto / Upload at least 1 photo');
+                return;
+            }
+
+            state.formData = {
+                ownerName: document.getElementById('ownerName').value,
+                petName: document.getElementById('petName').value,
+                species: document.getElementById('species').value,
+                birthDate: document.getElementById('birthDate').value,
+                gender: document.getElementById('gender').value,
+                habits: [
+                    document.getElementById('habit1').value,
+                    document.getElementById('habit2').value,
+                    document.getElementById('habit3').value
+                ].filter(h => h),
+                feedTimes: [document.getElementById('feedTime1').value, document.getElementById('feedTime2').value].filter(t => t),
+                favoriteFood: document.getElementById('favoriteFood').value,
+                favoriteSpot: document.getElementById('favoriteSpot').value,
+                energyLevel: document.getElementById('energyLevel').value,
+                socialBehavior: document.getElementById('socialBehavior').value,
+                fears: document.getElementById('fears').value,
+                healthNotes: document.getElementById('healthNotes').value,
+                isIndoor: document.getElementById('indoorOutdoor').checked,
+                ownerBond: document.getElementById('ownerBond').value,
+                personalityWord: document.getElementById('personalityWord').value
+            };
+
+            showSection('generating');
+            generateTwin();
+        }
+
+        // Toggle label
+        document.getElementById('indoorOutdoor').addEventListener('change', function() {
+            document.getElementById('indoorLabel').textContent = this.checked ? 'Outdoor' : 'Indoor';
+        });
+
+        // ===== TWIN GENERATION =====
+        async function generateTwin() {
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            
+            // Animate steps
+            for (let i = 0; i < steps.length; i++) {
+                await new Promise(r => setTimeout(r, 800));
+                if (i > 0) {
+                    document.getElementById(steps[i-1]).classList.remove('active');
+                    document.getElementById(steps[i-1]).classList.add('completed');
+                }
+                document.getElementById(steps[i]).classList.add('active');
+            }
+
+            try {
+                const response = await callQwenVL();
+                state.twinProfile = response;
+                state.currentStats = {
+                    cuteness: response.stats.cuteness,
+                    energy: response.stats.energy,
+                    mischief: response.stats.mischief,
+                    wisdom: response.stats.wisdom,
+                    loyalty: response.stats.loyalty,
+                    hunger: 30,
+                    happiness: 70
+                };
+                
+                displayTwinProfile();
+                showSection('profile');
+            } catch (error) {
+                console.error('Generation error:', error);
+                let errorMsg = 'Gagal membuat kembaran. Coba lagi. / Failed to generate twin. Please try again.';
+                if (error.name === 'AbortError') {
+                    errorMsg = 'Waktu habis! Server AI terlalu lambat. Coba lagi atau periksa koneksi. / Timeout! AI server too slow. Try again or check connection.';
+                } else if (error.message.includes('401')) {
+                    errorMsg = 'API Key tidak valid. Periksa kembali. / Invalid API Key. Please check again.';
+                } else if (error.message.includes('429')) {
+                    errorMsg = 'Terlalu banyak permintaan. Tunggu sebentar. / Too many requests. Please wait.';
+                } else if (error.message.includes('JSON')) {
+                    errorMsg = 'Format respons AI tidak valid. Coba lagi. / Invalid AI response format. Try again.';
+                }
+                alert(errorMsg);
+                showSection('form');
+            }
+        }
+
+        async function callQwenVL() {
+            const hybridNote = state.photos.length === 3 ? 'HYBRID FUSION MODE: These are 3 DIFFERENT pets. Create a completely new hybrid creature combining traits from all three.' : '';
+            
+            const systemPrompt = `You are Peliharaan AI, an expert system that analyzes real pet photographs and generates living digital twin personalities. You combine visual analysis from photos with owner-provided behavioral data to create a unique AI companion that reflects the real animal as closely as possible. You always respond in valid JSON only. No markdown. No explanation. No text before or after the JSON object.`;
+
+            const userPrompt = `I have uploaded ${state.photos.length} photo(s) of my pet.
+${hybridNote}
+
+Analyze ALL photos carefully. Detect:
+- Animal type, species, breed
+- Coat/fur color, pattern, markings
+- Eye color, facial features
+- Body size, build, posture
+- Any distinctive physical traits
+
+Combine with owner-provided behavioral data:
+- Name: ${state.formData.petName}
+- Species/Breed: ${state.formData.species}
+- Gender: ${state.formData.gender}
+- Energy Level (1-5): ${state.formData.energyLevel}
+- 3 Unique Habits: ${state.formData.habits.join(', ')}
+- Favorite Food: ${state.formData.favoriteFood}
+- Favorite Spot: ${state.formData.favoriteSpot}
+- Social Behavior: ${state.formData.socialBehavior}
+- Fears/Dislikes: ${state.formData.fears}
+- Owner Bond: ${state.formData.ownerBond}
+- One-Word Personality: ${state.formData.personalityWord}
+- Indoor/Outdoor: ${state.formData.isIndoor ? 'Outdoor' : 'Indoor'}
+
+Generate a complete digital twin profile in this EXACT JSON format:
+{
+  "twinName": "Creative twin name based on real name + personality",
+  "speciesTitle": "Official species designation with creative flair",
+  "backstory": "2-3 sentence origin story",
+  "personalityType": "MBTI-style label like 'INTJ - Si Perencana'",
+  "stats": {
+    "cuteness": 0-100,
+    "energy": 0-100,
+    "mischief": 0-100,
+    "wisdom": 0-100,
+    "loyalty": 0-100
+  },
+  "specialAbility": "One unique superpower based on behaviors",
+  "currentMood": "Starting mood like 'Lapar (kondisi kronis)'",
+  "firstWords": "First thing twin says to owner with attribution",
+  "ramadanWish": "Personalized Ramadan blessing in pet's voice",
+  "memeCaption": "Shareable meme text in pet's personality",
+  "twinId": "PLH-2026-XX-NNNNN format",
+  "avatarEmoji": "Single emoji representing the pet"
+}`;
+
+            const messages = [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: [
+                    { type: 'text', text: userPrompt },
+                    ...state.photos.map(photo => ({
+                        type: 'image_url',
+                        image_url: { url: photo }
+                    }))
+                ]}
+            ];
+
+            // API call with 30 second timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            
+            const response = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'qwen-vl-max',
+                    messages: messages,
+                    temperature: 0.85,
+                    max_tokens: 2000
+                }),
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const content = data.choices[0].message.content;
+            
+            // Extract JSON from response
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                throw new Error('No JSON found in response');
+            }
+
+            return JSON.parse(jsonMatch[0]);
+        }
+
+        // ===== DISPLAY TWIN PROFILE =====
+        function displayTwinProfile() {
+            const profile = state.twinProfile;
+            
+            document.getElementById('twinAvatar').textContent = profile.avatarEmoji || '🐱';
+            document.getElementById('twinName').textContent = profile.twinName;
+            document.getElementById('twinSpecies').textContent = profile.speciesTitle;
+            document.getElementById('twinId').textContent = profile.twinId;
+            document.getElementById('personalityType').textContent = profile.personalityType;
+            document.getElementById('hybridBadge').style.display = state.photos.length === 3 ? 'inline-block' : 'none';
+            document.getElementById('twinBackstory').textContent = profile.backstory;
+            document.getElementById('currentMood').textContent = profile.currentMood;
+            document.getElementById('interactMood').textContent = profile.currentMood;
+            
+            // Stats
+            document.getElementById('statCuteness').style.width = `${profile.stats.cuteness}%`;
+            document.getElementById('valCuteness').textContent = profile.stats.cuteness;
+            document.getElementById('statEnergy').style.width = `${profile.stats.energy}%`;
+            document.getElementById('valEnergy').textContent = profile.stats.energy;
+            document.getElementById('statMischief').style.width = `${profile.stats.mischief}%`;
+            document.getElementById('valMischief').textContent = profile.stats.mischief;
+            document.getElementById('statWisdom').style.width = `${profile.stats.wisdom}%`;
+            document.getElementById('valWisdom').textContent = profile.stats.wisdom;
+            document.getElementById('statLoyalty').style.width = `${profile.stats.loyalty}%`;
+            document.getElementById('valLoyalty').textContent = profile.stats.loyalty;
+            
+            document.getElementById('abilityText').textContent = profile.specialAbility;
+            document.getElementById('firstWordsText').textContent = `"${profile.firstWords}" — ${profile.twinName}`;
+            document.getElementById('ramadanText').textContent = profile.ramadanWish;
+            document.getElementById('memeText').textContent = profile.memeCaption;
+
+            // Certificate data
+            document.getElementById('certId').textContent = profile.twinId;
+            document.getElementById('certRealName').textContent = state.formData.petName;
+            document.getElementById('certTwinName').textContent = profile.twinName;
+            document.getElementById('certSpecies').textContent = state.formData.species;
+            document.getElementById('certDate').textContent = new Date().toLocaleDateString('id-ID');
+            document.getElementById('certPersonality').textContent = profile.personalityType;
+            document.getElementById('certTraits').textContent = state.formData.habits.slice(0, 3).join(', ') || 'Unik dan istimewa';
+            document.getElementById('certOwner').textContent = state.formData.ownerName;
+
+            // Share texts
+            const shareBase = `Meet ${profile.twinName}, my digital pet twin! 🐾\n\n"${profile.firstWords}"\n\nCreated with Peliharaan AI powered by Alibaba Cloud Qwen.`;
+            
+            document.getElementById('whatsappText').textContent = shareBase + '\n\n#PeliharaanAI #DigitalPetTwin';
+            document.getElementById('instagramText').textContent = shareBase + '\n\n🌙 ' + profile.ramadanWish + '\n\n#PeliharaanAI #DigitalPetTwin #AI #PetLovers #Ramadan';
+            document.getElementById('twitterText').textContent = profile.memeCaption + '\n\n— ' + profile.twinName + '\n\n#PeliharaanAI #DigitalPetTwin';
+        }
+
+        // ===== INTERACTION =====
+        function toggleTalk() {
+            const talkInput = document.getElementById('talkInput');
+            talkInput.style.display = talkInput.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        // Track if interaction is in progress
+        let isInteracting = false;
+
+        async function interact(action) {
+            if (isInteracting) return; // Prevent double-clicks
+            
+            const actions = {
+                feed: { id: 'FEED', label: 'Kasih Makan / Feed' },
+                play: { id: 'PLAY', label: 'Ajak Main / Play' },
+                talk: { id: 'TALK', label: 'Ngobrol / Talk' },
+                cuddle: { id: 'CUDDLE', label: 'Peluk / Cuddle' },
+                sleep: { id: 'SLEEP', label: 'Tidur / Sleep' }
+            };
+
+            const actionConfig = actions[action];
+            let userMessage = '';
+
+            if (action === 'talk') {
+                userMessage = document.getElementById('talkMessage').value;
+                if (!userMessage.trim()) return;
+                document.getElementById('talkMessage').value = '';
+            }
+
+            // Disable buttons during interaction
+            isInteracting = true;
+            document.querySelectorAll('.interaction-btn').forEach(btn => {
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            });
+
+            // Update stats locally
+            updateStats(action);
+
+            try {
+                const response = await callQwenText(actionConfig.id, userMessage);
+                displayResponse(response, actionConfig.label);
+            } catch (error) {
+                console.error('Interaction error:', error);
+                if (error.name === 'AbortError') {
+                    displayResponse('Waktu habis! Server AI terlalu lambat. / Timeout! AI server too slow.', actionConfig.label);
+                } else {
+                    displayResponse('Hmm... sepertinya aku sedang tidur. Coba lagi nanti ya! / Hmm... seems like I\'m napping. Try again later!', actionConfig.label);
+                }
+            } finally {
+                // Re-enable buttons
+                isInteracting = false;
+                document.querySelectorAll('.interaction-btn').forEach(btn => {
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                });
+            }
+        }
+
+        function updateStats(action) {
+            switch(action) {
+                case 'feed':
+                    state.currentStats.hunger = Math.max(0, state.currentStats.hunger - 20);
+                    state.currentStats.happiness = Math.min(100, state.currentStats.happiness + 15);
+                    break;
+                case 'play':
+                    state.currentStats.energy = Math.max(0, state.currentStats.energy - 15);
+                    if (state.currentStats.energy < 30) {
+                        state.currentStats.mischief = Math.min(100, state.currentStats.mischief + 10);
+                    }
+                    state.currentStats.happiness = Math.min(100, state.currentStats.happiness + 10);
+                    break;
+                case 'cuddle':
+                    state.currentStats.loyalty = Math.min(100, state.currentStats.loyalty + 10);
+                    state.currentStats.happiness = Math.min(100, state.currentStats.happiness + 10);
+                    break;
+                case 'sleep':
+                    state.currentStats.energy = Math.min(100, state.currentStats.energy + 20);
+                    state.currentStats.hunger = Math.min(100, state.currentStats.hunger + 10);
+                    break;
+                case 'talk':
+                    state.currentStats.happiness = Math.min(100, state.currentStats.happiness + 5);
+                    break;
+            }
+
+            // Update mood based on stats
+            let mood = 'Santai / Relaxed';
+            if (state.currentStats.hunger > 60) mood = 'Lapar / Hungry';
+            else if (state.currentStats.energy < 20) mood = 'Lelah / Tired';
+            else if (state.currentStats.happiness > 80) mood = 'Bahagia / Happy';
+            else if (state.currentStats.mischief > 70) mood = 'Ingin nakal / Mischievous';
+
+            document.getElementById('currentMood').textContent = mood;
+            document.getElementById('interactMood').textContent = mood;
+
+            // Update stat displays
+            document.getElementById('statEnergy').style.width = `${state.currentStats.energy}%`;
+            document.getElementById('valEnergy').textContent = state.currentStats.energy;
+            document.getElementById('statMischief').style.width = `${state.currentStats.mischief}%`;
+            document.getElementById('valMischief').textContent = state.currentStats.mischief;
+            document.getElementById('statLoyalty').style.width = `${state.currentStats.loyalty}%`;
+            document.getElementById('valLoyalty').textContent = state.currentStats.loyalty;
+        }
+
+        async function callQwenText(action, userMessage) {
+            const systemPrompt = `You are ${state.twinProfile.twinName}, a digital pet twin with this personality:
+- Species: ${state.twinProfile.speciesTitle}
+- Personality Type: ${state.twinProfile.personalityType}
+- Special Ability: ${state.twinProfile.specialAbility}
+- Current Mood: ${document.getElementById('currentMood').textContent}
+- Hunger: ${state.currentStats.hunger}%
+- Energy: ${state.currentStats.energy}%
+- Happiness: ${state.currentStats.happiness}%
+
+Respond in character as this pet. Use Indonesian language primarily with occasional English. Be playful, unique, and true to your personality. Keep responses short (1-2 sentences).`;
+
+            let userPrompt = action;
+            if (userMessage) {
+                userPrompt += `: ${userMessage}`;
+            }
+
+            // API call with 10 second timeout for interactions
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            
+            const response = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'qwen-max',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userPrompt }
+                    ],
+                    temperature: 0.9,
+                    max_tokens: 150
+                }),
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        function displayResponse(text, actionLabel) {
+            const bubble = document.getElementById('responseBubble');
+            document.getElementById('responseText').textContent = text;
+            document.getElementById('responseMeta').textContent = `— ${state.twinProfile.twinName} | ${actionLabel}`;
+            bubble.style.display = 'block';
+            bubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // ===== CERTIFICATE =====
+        function printCertificate() {
+            window.print();
+        }
+
+        // ===== SHARE =====
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Tersalin! / Copied!');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Tersalin! / Copied!');
+            });
+        }
+
+        // Initialize
+        document.getElementById('navProgress').style.display = 'none';
+
+        // ===== DIAGNOSTIC MODE (Ctrl+Shift+D) =====
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                runDiagnostics();
+            }
+        });
+
+        async function runDiagnostics() {
+            console.log('🔍 Running Peliharaan AI Diagnostics...\n');
+            
+            // Test 1: API Key
+            const apiKey = state.apiKey;
+            console.log(`✅ API Key: ${apiKey ? 'Present (' + apiKey.substring(0, 10) + '...)' : 'MISSING (memory only per TRD)'}`);
+            
+            // Test 2: State
+            console.log(`✅ Photos: ${state.photos.length} uploaded`);
+            console.log(`✅ Form Data: ${Object.keys(state.formData).length} fields`);
+            console.log(`✅ Twin Profile: ${state.twinProfile ? 'Generated' : 'Not yet'}`);
+            
+            // Test 3: API Connectivity
+            if (apiKey) {
+                console.log('\n🌐 Testing API connectivity...');
+                try {
+                    const response = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/models', {
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    });
+                    if (response.ok) {
+                        console.log('✅ API Connection: SUCCESS');
+                        const data = await response.json();
+                        console.log(`   Available models: ${data.data?.length || 'unknown'}`);
+                    } else if (response.status === 401) {
+                        console.log('❌ API Connection: INVALID KEY');
+                    } else {
+                        console.log(`⚠️ API Connection: HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.log('❌ API Connection: FAILED - ' + error.message);
+                }
+            }
+            
+            // Test 4: Required Elements
+            const requiredElements = ['hero', 'apiKey', 'upload', 'form', 'generating', 'profile', 'interact', 'certificate', 'share'];
+            const missing = requiredElements.filter(id => !document.getElementById(id));
+            console.log(`\n✅ Sections: ${requiredElements.length - missing.length}/${requiredElements.length} found`);
+            if (missing.length) console.log('   Missing:', missing);
+            
+            console.log('\n✨ Diagnostics complete!');
+            alert('Diagnostics complete! Check browser console (F12) for results.');
+        }
+    </script>
+</body>
+</html>
