@@ -1,19 +1,10 @@
 #!/bin/bash
-# Peliharaan AI Deployment Script
-# Usage: ./deploy.sh YOUR_SERVER_IP
+# Peliharaan AI Deployment Script for GitHub Pages
+# Usage: ./deploy.sh
 
 set -e
 
-SERVER_IP=$1
-
-if [ -z "$SERVER_IP" ]; then
-    echo "Usage: ./deploy.sh YOUR_SERVER_IP"
-    echo "Example: ./deploy.sh 47.74.123.45"
-    exit 1
-fi
-
-echo "🚀 Deploying Peliharaan AI to Alibaba Cloud SAS..."
-echo "Server IP: $SERVER_IP"
+echo "🚀 Deploying Peliharaan AI to GitHub Pages..."
 echo ""
 
 # Check if index.html exists
@@ -22,45 +13,43 @@ if [ ! -f "index.html" ]; then
     exit 1
 fi
 
-echo "📦 Step 1: Installing Nginx on server..."
-ssh root@$SERVER_IP << 'EOF'
-    apt-get update
-    apt-get install -y nginx
-    systemctl start nginx
-    systemctl enable nginx
-EOF
+# Check if we're in a git repository
+if [ ! -d ".git" ]; then
+    echo "❌ Error: Not a git repository"
+    exit 1
+fi
+
+# Check current branch
+CURRENT_BRANCH=$(git branch --show-current)
+echo "📍 Current branch: $CURRENT_BRANCH"
+
+# Ensure we're on main branch
+if [ "$CURRENT_BRANCH" != "main" ]; then
+    echo "⚠️  Switching to main branch..."
+    git checkout main
+fi
+
+# Check for uncommitted changes
+if [ -n "$(git status --porcelain)" ]; then
+    echo "📦 Committing changes..."
+    git add -A
+    git commit -m "Deploy to GitHub Pages - $(date '+%Y-%m-%d %H:%M:%S')"
+fi
+
+# Push to GitHub
+echo "📤 Pushing to GitHub..."
+git push origin main
 
 echo ""
-echo "📤 Step 2: Uploading index.html..."
-scp index.html root@$SERVER_IP:/var/www/html/
-
+echo "✨ Push complete!"
 echo ""
-echo "🔧 Step 3: Configuring Nginx..."
-ssh root@$SERVER_IP << 'EOF'
-    # Set proper permissions
-    chown www-data:www-data /var/www/html/index.html
-    chmod 644 /var/www/html/index.html
-    
-    # Test Nginx configuration
-    nginx -t
-    
-    # Reload Nginx
-    systemctl reload nginx
-    
-    echo "✅ Nginx configured successfully"
-EOF
-
+echo "🌐 To enable GitHub Pages:"
+echo "   1. Go to https://github.com/Therealratoshen/Peliharan.AI/settings/pages"
+echo "   2. Under 'Source', select 'GitHub Actions'"
+echo "   3. Wait 1-2 minutes for deployment"
 echo ""
-echo "✨ Deployment complete!"
+echo "🌍 Your site will be live at:"
+echo "   https://therealratoshen.github.io/Peliharan.AI/"
 echo ""
-echo "🌐 Your Peliharaan AI is live at:"
-echo "   http://$SERVER_IP"
-echo ""
-echo "📋 Next steps:"
-echo "   1. Open http://$SERVER_IP in your browser"
-echo "   2. Enter your Alibaba Cloud API key"
-echo "   3. Upload pet photos and create your digital twin!"
-echo ""
-echo "🔒 Security note: Consider setting up HTTPS with Let's Encrypt"
-echo "   sudo apt install certbot python3-certbot-nginx"
-echo "   sudo certbot --nginx -d yourdomain.com"
+echo "⚠️  NOTE: AI features may not work due to CORS restrictions"
+echo "   when hosted on GitHub Pages. This is a browser security limitation."

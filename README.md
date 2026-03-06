@@ -42,8 +42,8 @@ Unlike Tamagotchi or Neopets which create fictional virtual pets, Peliharaan AI 
 | AI Vision | Alibaba Cloud qwen-vl-max |
 | AI Text | Alibaba Cloud qwen-max |
 | API Gateway | DashScope International |
-| Web Server | Nginx 1.24+ |
-| Hosting | Alibaba Cloud Simple Application Server |
+| Web Server | Nginx (optional) |
+| Hosting | GitHub Pages / Alibaba Cloud SAS |
 
 ### Single-File Architecture
 ```
@@ -75,22 +75,25 @@ cd Peliharan.AI
 open index.html
 ```
 
-### Deployment (Alibaba Cloud SAS)
+### Deployment (GitHub Pages)
+
+#### Option 1: Automatic Deployment (GitHub Actions)
+1. Go to repository **Settings > Pages**
+2. Under **Source**, select **GitHub Actions**
+3. Push to `main` branch - deployment happens automatically
+4. Your site will be live at: `https://therealratoshen.github.io/Peliharan.AI/`
+
+#### Option 2: Using Deploy Script
 ```bash
-# SSH into your Simple Application Server
-ssh root@YOUR_SERVER_IP
+# Run the deployment script
+./deploy.sh
 
-# Install Nginx
-sudo apt update && sudo apt install nginx -y
-sudo systemctl start nginx && sudo systemctl enable nginx
-
-# Upload index.html to web root
-sudo cp index.html /var/www/html/
-sudo nginx -t && sudo systemctl reload nginx
-
-# Access your app
-open http://YOUR_SERVER_IP
+# Then enable GitHub Pages in settings:
+# https://github.com/Therealratoshen/Peliharan.AI/settings/pages
 ```
+
+#### ⚠️ Important Note
+When hosted on GitHub Pages, AI features may not work due to **CORS restrictions** (browser security policy). For full functionality, use [Alibaba Cloud Simple Application Server](https://www.alibabacloud.com/product/sas) or a backend proxy.
 
 ---
 
