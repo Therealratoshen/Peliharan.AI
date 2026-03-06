@@ -1603,12 +1603,29 @@
         }
 
         function renderPhotoPreviews() {
-            photoPreview.innerHTML = state.photos.map((photo, index) => `
-                <div class="photo-item">
-                    <img src="${photo}" alt="Pet photo ${index + 1}">
-                    <button class="photo-remove" onclick="removePhoto(${index})">×</button>
-                </div>
-            `).join('');
+            // Clear existing previews safely
+            while (photoPreview.firstChild) {
+                photoPreview.removeChild(photoPreview.firstChild);
+            }
+            
+            // Create DOM elements instead of innerHTML to avoid XSS
+            state.photos.forEach((photo, index) => {
+                const item = document.createElement('div');
+                item.className = 'photo-item';
+                
+                const img = document.createElement('img');
+                img.src = photo;
+                img.alt = `Pet photo ${index + 1}`;
+                
+                const btn = document.createElement('button');
+                btn.className = 'photo-remove';
+                btn.textContent = '×';
+                btn.onclick = () => removePhoto(index);
+                
+                item.appendChild(img);
+                item.appendChild(btn);
+                photoPreview.appendChild(item);
+            });
 
             document.getElementById('photoNextBtn').disabled = state.photos.length === 0;
         }
@@ -1660,6 +1677,13 @@
         // ===== TWIN GENERATION =====
         async function generateTwin() {
             const steps = ['step1', 'step2', 'step3', 'step4'];
+            
+            // Reset all steps to initial state
+            steps.forEach((step, index) => {
+                const el = document.getElementById(step);
+                el.classList.remove('active', 'completed');
+                if (index === 0) el.classList.add('active');
+            });
             
             // Animate steps
             for (let i = 0; i < steps.length; i++) {
@@ -1800,15 +1824,20 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             }
 
             const data = await response.json();
-            const content = data.choices[0].message.content;
+            let content = data.choices[0].message.content;
             
-            // Extract JSON from response
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
+            // Remove markdown code blocks if present
+            content = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+            
+            // Extract JSON from response (find first { and last })
+            const startIdx = content.indexOf('{');
+            const endIdx = content.lastIndexOf('}');
+            if (startIdx === -1 || endIdx === -1 || startIdx >= endIdx) {
                 throw new Error('No JSON found in response');
             }
-
-            return JSON.parse(jsonMatch[0]);
+            
+            const jsonStr = content.substring(startIdx, endIdx + 1);
+            return JSON.parse(jsonStr);
         }
 
         // ===== DISPLAY TWIN PROFILE =====
