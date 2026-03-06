@@ -1738,6 +1738,7 @@ Generate a complete digital twin profile in this EXACT JSON format:
   "speciesTitle": "Official species designation with creative flair",
   "backstory": "2-3 sentence origin story",
   "personalityType": "MBTI-style label like 'INTJ - Si Perencana'",
+  "communicationStyle": "How this pet talks e.g. sarkastis, dramatis, malas",
   "stats": {
     "cuteness": 0-100,
     "energy": 0-100,
@@ -1745,14 +1746,22 @@ Generate a complete digital twin profile in this EXACT JSON format:
     "wisdom": 0-100,
     "loyalty": 0-100
   },
-  "specialAbility": "One unique superpower based on behaviors",
   "currentMood": "Starting mood like 'Lapar (kondisi kronis)'",
+  "favoriteThings": ["thing1", "thing2", "thing3"],
+  "fears": ["fear1", "fear2"],
+  "specialAbility": "One unique superpower based on behaviors",
+  "weakness": "One funny weakness",
+  "dailySchedule": "One sentence typical day description",
+  "physicalDescription": "2-3 sentence description of pet's appearance from photos",
   "firstWords": "First thing twin says to owner with attribution",
   "ramadanWish": "Personalized Ramadan blessing in pet's voice",
   "memeCaption": "Shareable meme text in pet's personality",
   "twinId": "PLH-2026-XX-NNNNN format",
-  "avatarEmoji": "Single emoji representing the pet"
-}`;
+  "avatarEmoji": "Single emoji representing the pet",
+  "isHybrid": false,
+  "hybridOrigins": null
+}
+For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal2", "animal3"]`;
 
             const messages = [
                 { role: 'system', content: systemPrompt },
@@ -1956,21 +1965,42 @@ Generate a complete digital twin profile in this EXACT JSON format:
         }
 
         async function callQwenText(action, userMessage) {
-            const systemPrompt = `You are ${state.twinProfile.twinName}, a digital pet twin with this personality:
+            const systemPrompt = `You are a digital pet twin AI. You ALWAYS respond in character as the specified pet. Never break character. Never say you are an AI. Respond ONLY in valid JSON. No markdown. No text outside the JSON.`;
+
+            const userPrompt = `You are ${state.twinProfile.twinName}, a digital pet twin.
+
+YOUR PERSONALITY:
 - Species: ${state.twinProfile.speciesTitle}
 - Personality Type: ${state.twinProfile.personalityType}
+- Communication Style: ${state.twinProfile.communicationStyle || 'friendly'}
 - Special Ability: ${state.twinProfile.specialAbility}
-- Current Mood: ${document.getElementById('currentMood').textContent}
-- Hunger: ${state.currentStats.hunger}%
-- Energy: ${state.currentStats.energy}%
-- Happiness: ${state.currentStats.happiness}%
+- Weakness: ${state.twinProfile.weakness || 'easily distracted'}
+- Favorite Things: ${(state.twinProfile.favoriteThings || []).join(', ')}
+- Fears: ${(state.twinProfile.fears || []).join(', ')}
 
-Respond in character as this pet. Use Indonesian language primarily with occasional English. Be playful, unique, and true to your personality. Keep responses short (1-2 sentences).`;
+YOUR CURRENT STATE:
+- Mood: ${document.getElementById('currentMood').textContent}
+- Energy: ${state.currentStats.energy}/100
+- Mischief: ${state.currentStats.mischief}/100
+- Cuteness: ${state.currentStats.cuteness}/100
+- Loyalty: ${state.currentStats.loyalty}/100
 
-            let userPrompt = action;
-            if (userMessage) {
-                userPrompt += `: ${userMessage}`;
-            }
+THE OWNER JUST DID: ${action}${userMessage ? ': ' + userMessage : ''}
+
+Respond as this pet would. Stay in character. Reference your personality, current mood, and stats.
+
+Respond in this JSON format:
+{
+  "response": "What the pet says/does in their unique voice, 1-3 sentences, expressive",
+  "newMood": "lapar | playful | mengantuk | penasaran | cemberut | senang",
+  "moodEmoji": "single emoji e.g. 😒 or 🐾 or 😺",
+  "statChanges": {
+    "energy": 0,
+    "mischief": 0,
+    "cuteness": 0
+  },
+  "physicalAction": "Short physical action e.g. mengguling, mendorong gelas dari meja"
+}`;
 
             // API call with 10 second timeout for interactions
             const controller = new AbortController();
@@ -1989,7 +2019,7 @@ Respond in character as this pet. Use Indonesian language primarily with occasio
                         { role: 'user', content: userPrompt }
                     ],
                     temperature: 0.9,
-                    max_tokens: 150
+                    max_tokens: 400
                 }),
                 signal: controller.signal
             });
@@ -2004,10 +2034,51 @@ Respond in character as this pet. Use Indonesian language primarily with occasio
             return data.choices[0].message.content;
         }
 
-        function displayResponse(text, actionLabel) {
+        function displayResponse(responseData, actionLabel) {
             const bubble = document.getElementById('responseBubble');
-            document.getElementById('responseText').textContent = text;
+            
+            // Parse JSON response if string, or use object directly
+            let data;
+            try {
+                data = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
+            } catch (e) {
+                // Fallback for plain text responses
+                data = { response: responseData, moodEmoji: '🐾', physicalAction: '' };
+            }
+            
+            // Display main response with emoji and physical action
+            let displayText = data.response;
+            if (data.moodEmoji) displayText = `${data.moodEmoji} ${displayText}`;
+            if (data.physicalAction) displayText += `\n\n*${data.physicalAction}*`;
+            
+            document.getElementById('responseText').textContent = displayText;
             document.getElementById('responseMeta').textContent = `— ${state.twinProfile.twinName} | ${actionLabel}`;
+            
+            // Update mood if provided
+            if (data.newMood) {
+                document.getElementById('currentMood').textContent = data.newMood;
+                document.getElementById('interactMood').textContent = data.newMood;
+            }
+            
+            // Apply stat changes if provided
+            if (data.statChanges) {
+                if (data.statChanges.energy) {
+                    state.currentStats.energy = Math.max(0, Math.min(100, state.currentStats.energy + data.statChanges.energy));
+                    document.getElementById('statEnergy').style.width = `${state.currentStats.energy}%`;
+                    document.getElementById('valEnergy').textContent = state.currentStats.energy;
+                }
+                if (data.statChanges.mischief) {
+                    state.currentStats.mischief = Math.max(0, Math.min(100, state.currentStats.mischief + data.statChanges.mischief));
+                    document.getElementById('statMischief').style.width = `${state.currentStats.mischief}%`;
+                    document.getElementById('valMischief').textContent = state.currentStats.mischief;
+                }
+                if (data.statChanges.cuteness) {
+                    state.currentStats.cuteness = Math.max(0, Math.min(100, state.currentStats.cuteness + data.statChanges.cuteness));
+                    document.getElementById('statCuteness').style.width = `${state.currentStats.cuteness}%`;
+                    document.getElementById('valCuteness').textContent = state.currentStats.cuteness;
+                }
+            }
+            
             bubble.style.display = 'block';
             bubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
