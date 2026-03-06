@@ -49,7 +49,7 @@ const state = {
 ## Application Flow
 
 1. **Hero** → Landing page with CTA
-2. **API Key Input** → Save to localStorage
+2. **API Key Input** → Save to memory (NOT localStorage per TRD Section 6)
 3. **Photo Upload** → 1-3 photos, drag-drop, base64 conversion
 4. **Behavioral Form** → 16 fields about pet personality
 5. **Generating** → Loading animation with 4 steps

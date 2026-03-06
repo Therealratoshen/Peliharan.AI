@@ -1023,10 +1023,13 @@
                         Alibaba Cloud Model Studio API Key
                         <span class="label-en">Your API Key</span>
                     </label>
-                    <input type="password" id="apiKeyInput" placeholder="sk-xxxxxxxxxxxxxxxx">
+                    <div style="position: relative;">
+                        <input type="password" id="apiKeyInput" placeholder="sk-xxxxxxxxxxxxxxxx" style="padding-right: 40px;">
+                        <button type="button" id="apiKeyToggle" onclick="toggleApiKeyVisibility()" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem;">👁️</button>
+                    </div>
                     <p class="input-hint">
                         Dapatkan API key dari <a href="https://dashscope-intl.aliyuncs.com" target="_blank">Alibaba Cloud Model Studio</a>.
-                        <br>Get your API key from Alibaba Cloud Model Studio.
+                        <br>Get your API key from Alibaba Cloud Model Studio. Must start with "sk-".
                     </p>
                 </div>
                 <div class="btn-group">
@@ -1512,6 +1515,89 @@
             conversationHistory: []
         };
 
+        // ===== UTILITY FUNCTIONS =====
+        
+        // Robust JSON extraction from AI response
+        function extractJSON(content) {
+            // Try direct parse first
+            try {
+                const direct = JSON.parse(content);
+                return direct;
+            } catch (e) {
+                // Continue to extraction
+            }
+            
+            // Remove markdown code blocks if present
+            content = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+            
+            // Extract JSON from response (find first { and last })
+            const startIdx = content.indexOf('{');
+            const endIdx = content.lastIndexOf('}');
+            if (startIdx === -1 || endIdx === -1 || startIdx >= endIdx) {
+                throw new Error('No JSON found in response');
+            }
+            
+            const jsonStr = content.substring(startIdx, endIdx + 1);
+            
+            // Validate with try/catch
+            try {
+                return JSON.parse(jsonStr);
+            } catch (e) {
+                throw new Error(`Invalid JSON: ${e.message}`);
+            }
+        }
+        
+        // Input sanitization to prevent injection
+        function sanitizeInput(str) {
+            if (!str || typeof str !== 'string') return '';
+            // Remove characters that could break JSON or inject prompts
+            return str
+                .replace(/["\\]/g, '') // Remove quotes and backslashes
+                .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+                .replace(/\{/g, '') // Remove curly braces
+                .replace(/\}/g, '')
+                .replace(/\[\s*INST\s*\]/gi, '') // Remove instruction markers
+                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+                .trim();
+        }
+        
+        // API key validation
+        function validateApiKey(key) {
+            if (!key || typeof key !== 'string') {
+                return { valid: false, error: 'API key is required' };
+            }
+            if (!key.startsWith('sk-')) {
+                return { valid: false, error: 'API key must start with "sk-"' };
+            }
+            if (key.length < 20) {
+                return { valid: false, error: 'API key is too short' };
+            }
+            return { valid: true };
+        }
+        
+        // Check if current date is during Ramadan (approximate)
+        function isRamadanPeriod() {
+            const now = new Date();
+            const year = now.getFullYear();
+            // Approximate Ramadan dates for 2025-2027
+            const ramadanDates = {
+                2025: { start: new Date('2025-02-28'), end: new Date('2025-03-30') },
+                2026: { start: new Date('2026-02-18'), end: new Date('2026-03-20') },
+                2027: { start: new Date('2027-02-08'), end: new Date('2027-03-09') }
+            };
+            
+            const ramadan = ramadanDates[year];
+            if (!ramadan) return false;
+            
+            // Add 2-day buffer
+            const start = new Date(ramadan.start);
+            start.setDate(start.getDate() - 2);
+            const end = new Date(ramadan.end);
+            end.setDate(end.getDate() + 2);
+            
+            return now >= start && now <= end;
+        }
+
         // ===== NAVIGATION =====
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1532,14 +1618,74 @@
 
         // ===== API KEY =====
         function saveApiKey() {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if (!key) {
-                alert('Masukkan API key / Please enter API key');
+            const keyInput = document.getElementById('apiKeyInput');
+            const errorDiv = document.getElementById('apiKeyError') || createErrorDiv('apiKeyInput', 'apiKeyError');
+            const key = keyInput.value.trim();
+            
+            // Validate API key format
+            const validation = validateApiKey(key);
+            if (!validation.valid) {
+                errorDiv.textContent = validation.error;
+                errorDiv.style.display = 'block';
                 return;
             }
+            
+            errorDiv.style.display = 'none';
             state.apiKey = key;
             // TRD Security: API key is NOT stored in localStorage (memory only)
             showSection('upload');
+        }
+        
+        // Helper to create error div if not exists
+        function createErrorDiv(inputId, errorId) {
+            const input = document.getElementById(inputId);
+            let errorDiv = document.getElementById(errorId);
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = errorId;
+                errorDiv.className = 'error-message';
+                errorDiv.style.cssText = 'color: #e74c3c; font-size: 0.9rem; margin-top: 8px; display: none;';
+                input.parentNode.insertBefore(errorDiv, input.nextSibling);
+            }
+            return errorDiv;
+        }
+        
+        // Toggle API key visibility
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('apiKeyInput');
+            const toggle = document.getElementById('apiKeyToggle');
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                toggle.textContent = '👁️';
+            }
+        }
+        
+        // Show upload feedback message
+        function showUploadMessage(message, type = 'info') {
+            const uploadZone = document.getElementById('uploadZone');
+            let msgDiv = document.getElementById('uploadMessage');
+            if (!msgDiv) {
+                msgDiv = document.createElement('div');
+                msgDiv.id = 'uploadMessage';
+                uploadZone.parentNode.insertBefore(msgDiv, uploadZone.nextSibling);
+            }
+            
+            const colors = {
+                info: '#3498db',
+                warning: '#f39c12',
+                error: '#e74c3c'
+            };
+            
+            msgDiv.textContent = message;
+            msgDiv.style.cssText = `margin-top: 12px; padding: 10px; border-radius: 8px; background: ${colors[type]}15; color: ${colors[type]}; font-size: 0.9rem; text-align: center;`;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 5000);
         }
 
         // ===== PHOTO UPLOAD =====
@@ -1572,6 +1718,12 @@
             const maxSize = 5 * 1024 * 1024;
             const maxPhotos = 3;
             
+            // Check if already at max photos
+            if (state.photos.length >= maxPhotos) {
+                showUploadMessage('Maksimum 3 foto sudah tercapai / Maximum 3 photos reached', 'warning');
+                return;
+            }
+            
             let invalidFiles = [];
             let validFiles = [];
             
@@ -1589,7 +1741,12 @@
             });
             
             if (invalidFiles.length > 0) {
-                alert('Beberapa file tidak bisa diunggah:\n' + invalidFiles.join('\n') + '\n\nSupported: JPG, PNG, WEBP max 5MB');
+                showUploadMessage('Beberapa file tidak bisa diunggah: ' + invalidFiles.join(', ') + '. Supported: JPG, PNG, WEBP max 5MB', 'error');
+            }
+            
+            // Show message if max reached after this upload
+            if (state.photos.length + validFiles.length >= maxPhotos) {
+                showUploadMessage('Maksimum 3 foto tercapai / Maximum 3 photos reached', 'info');
             }
 
             validFiles.forEach(file => {
@@ -1637,36 +1794,74 @@
 
         // ===== FORM SUBMISSION =====
         function submitForm() {
+            // Clear previous errors
+            document.querySelectorAll('.form-error').forEach(el => el.remove());
+            
             if (state.photos.length === 0) {
-                alert('Unggah minimal 1 foto / Upload at least 1 photo');
+                showFormError('uploadSection', 'Unggah minimal 1 foto / Upload at least 1 photo');
                 return;
             }
 
+            // Required fields validation
+            const requiredFields = ['petName', 'species', 'ownerName'];
+            let hasError = false;
+            
+            for (const fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    showFormError(fieldId, 'Field ini wajib diisi / This field is required');
+                    hasError = true;
+                }
+            }
+            
+            if (hasError) return;
+
             state.formData = {
-                ownerName: document.getElementById('ownerName').value,
-                petName: document.getElementById('petName').value,
-                species: document.getElementById('species').value,
+                ownerName: sanitizeInput(document.getElementById('ownerName').value),
+                petName: sanitizeInput(document.getElementById('petName').value),
+                species: sanitizeInput(document.getElementById('species').value),
                 birthDate: document.getElementById('birthDate').value,
                 gender: document.getElementById('gender').value,
                 habits: [
-                    document.getElementById('habit1').value,
-                    document.getElementById('habit2').value,
-                    document.getElementById('habit3').value
+                    sanitizeInput(document.getElementById('habit1').value),
+                    sanitizeInput(document.getElementById('habit2').value),
+                    sanitizeInput(document.getElementById('habit3').value)
                 ].filter(h => h),
                 feedTimes: [document.getElementById('feedTime1').value, document.getElementById('feedTime2').value].filter(t => t),
-                favoriteFood: document.getElementById('favoriteFood').value,
-                favoriteSpot: document.getElementById('favoriteSpot').value,
+                favoriteFood: sanitizeInput(document.getElementById('favoriteFood').value),
+                favoriteSpot: sanitizeInput(document.getElementById('favoriteSpot').value),
                 energyLevel: document.getElementById('energyLevel').value,
                 socialBehavior: document.getElementById('socialBehavior').value,
-                fears: document.getElementById('fears').value,
-                healthNotes: document.getElementById('healthNotes').value,
+                fears: sanitizeInput(document.getElementById('fears').value),
+                healthNotes: sanitizeInput(document.getElementById('healthNotes').value),
                 isIndoor: document.getElementById('indoorOutdoor').checked,
                 ownerBond: document.getElementById('ownerBond').value,
-                personalityWord: document.getElementById('personalityWord').value
+                personalityWord: sanitizeInput(document.getElementById('personalityWord').value)
             };
 
             showSection('generating');
             generateTwin();
+        }
+        
+        // Show form field error
+        function showFormError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'form-error';
+            errorDiv.textContent = message;
+            errorDiv.style.cssText = 'color: #e74c3c; font-size: 0.85rem; margin-top: 4px;';
+            
+            // Insert after the field or its parent
+            const parent = field.closest('.form-group') || field.parentNode;
+            parent.appendChild(errorDiv);
+            
+            // Highlight field
+            field.style.borderColor = '#e74c3c';
+            setTimeout(() => {
+                field.style.borderColor = '';
+            }, 3000);
         }
 
         // Toggle label
@@ -1849,8 +2044,39 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             document.getElementById('twinSpecies').textContent = profile.speciesTitle;
             document.getElementById('twinId').textContent = profile.twinId;
             document.getElementById('personalityType').textContent = profile.personalityType;
-            document.getElementById('hybridBadge').style.display = state.photos.length === 3 ? 'inline-block' : 'none';
+            // Show hybrid badge only if API returned isHybrid=true
+            const isHybrid = profile.isHybrid === true;
+            document.getElementById('hybridBadge').style.display = isHybrid ? 'inline-block' : 'none';
             document.getElementById('twinBackstory').textContent = profile.backstory;
+            
+            // Show physical description if available
+            if (profile.physicalDescription) {
+                const physDiv = document.createElement('div');
+                physDiv.className = 'physical-description';
+                physDiv.innerHTML = `<strong>🐾 Penampilan:</strong> ${profile.physicalDescription}`;
+                physDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 0.9rem; line-height: 1.5;';
+                document.getElementById('twinBackstory').parentNode.insertBefore(physDiv, document.getElementById('twinBackstory').nextSibling);
+            }
+            
+            // Show daily schedule if available
+            if (profile.dailySchedule) {
+                const scheduleDiv = document.createElement('div');
+                scheduleDiv.className = 'daily-schedule';
+                scheduleDiv.innerHTML = `<strong>📅 Rutinitas:</strong> ${profile.dailySchedule}`;
+                scheduleDiv.style.cssText = 'margin-top: 8px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 0.9rem; line-height: 1.5;';
+                const refNode = document.querySelector('.physical-description') || document.getElementById('twinBackstory');
+                refNode.parentNode.insertBefore(scheduleDiv, refNode.nextSibling);
+            }
+            
+            // Show hybrid origins if hybrid
+            if (isHybrid && profile.hybridOrigins && profile.hybridOrigins.length > 0) {
+                const originsDiv = document.createElement('div');
+                originsDiv.className = 'hybrid-origins';
+                originsDiv.innerHTML = `<strong>⚡ Fusion dari:</strong> ${profile.hybridOrigins.join(', ')}`;
+                originsDiv.style.cssText = 'margin-top: 8px; padding: 8px; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 0.9rem;';
+                const refNode = document.querySelector('.daily-schedule') || document.querySelector('.physical-description') || document.getElementById('twinBackstory');
+                refNode.parentNode.insertBefore(originsDiv, refNode.nextSibling);
+            }
             document.getElementById('currentMood').textContent = profile.currentMood;
             document.getElementById('interactMood').textContent = profile.currentMood;
             
@@ -1868,7 +2094,16 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             
             document.getElementById('abilityText').textContent = profile.specialAbility;
             document.getElementById('firstWordsText').textContent = `"${profile.firstWords}" — ${profile.twinName}`;
-            document.getElementById('ramadanText').textContent = profile.ramadanWish;
+            
+            // Only show Ramadan section during Ramadan period
+            const ramadanSection = document.getElementById('ramadanWish');
+            if (isRamadanPeriod()) {
+                document.getElementById('ramadanText').textContent = profile.ramadanWish;
+                ramadanSection.style.display = 'block';
+            } else {
+                ramadanSection.style.display = 'none';
+            }
+            
             document.getElementById('memeText').textContent = profile.memeCaption;
 
             // Certificate data
@@ -1876,10 +2111,32 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             document.getElementById('certRealName').textContent = state.formData.petName;
             document.getElementById('certTwinName').textContent = profile.twinName;
             document.getElementById('certSpecies').textContent = state.formData.species;
-            document.getElementById('certDate').textContent = new Date().toLocaleDateString('id-ID');
+            // Use birth date if available, otherwise current date
+            const certDate = state.formData.birthDate 
+                ? new Date(state.formData.birthDate).toLocaleDateString('id-ID')
+                : new Date().toLocaleDateString('id-ID');
+            document.getElementById('certDate').textContent = certDate;
             document.getElementById('certPersonality').textContent = profile.personalityType;
             document.getElementById('certTraits').textContent = state.formData.habits.slice(0, 3).join(', ') || 'Unik dan istimewa';
             document.getElementById('certOwner').textContent = state.formData.ownerName;
+            
+            // Add feeding schedule and health notes to certificate if available
+            let certExtras = [];
+            if (state.formData.feedTimes && state.formData.feedTimes.length > 0) {
+                certExtras.push(`Jadwal Makan: ${state.formData.feedTimes.join(', ')}`);
+            }
+            if (state.formData.healthNotes) {
+                certExtras.push(`Catatan Kesehatan: ${state.formData.healthNotes}`);
+            }
+            if (certExtras.length > 0) {
+                const extrasDiv = document.createElement('div');
+                extrasDiv.className = 'cert-extras';
+                extrasDiv.innerHTML = certExtras.map(e => `<p style="margin: 4px 0; font-size: 0.85rem; color: #666;">${e}</p>`).join('');
+                const certInfo = document.querySelector('.certificate-info');
+                if (certInfo) {
+                    certInfo.appendChild(extrasDiv);
+                }
+            }
 
             // Share texts
             const shareBase = `Meet ${profile.twinName}, my digital pet twin! 🐾\n\n"${profile.firstWords}"\n\nCreated with Peliharaan AI powered by Alibaba Cloud Qwen.`;
@@ -1892,7 +2149,21 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
         // ===== INTERACTION =====
         function toggleTalk() {
             const talkInput = document.getElementById('talkInput');
-            talkInput.style.display = talkInput.style.display === 'none' ? 'flex' : 'none';
+            const talkBtn = document.querySelector('[onclick="toggleTalk()"]');
+            const isVisible = talkInput.style.display === 'flex';
+            
+            talkInput.style.display = isVisible ? 'none' : 'flex';
+            
+            // Update button visual state
+            if (talkBtn) {
+                talkBtn.style.background = isVisible ? '' : 'var(--primary)';
+                talkBtn.style.color = isVisible ? '' : 'white';
+            }
+            
+            // Focus input when shown
+            if (!isVisible) {
+                setTimeout(() => document.getElementById('talkMessage').focus(), 100);
+            }
         }
 
         // Track if interaction is in progress
@@ -1914,7 +2185,19 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
 
             if (action === 'talk') {
                 userMessage = document.getElementById('talkMessage').value;
-                if (!userMessage.trim()) return;
+                if (!userMessage.trim()) {
+                    // Show inline hint instead of silent return
+                    const hintDiv = document.getElementById('talkHint') || document.createElement('div');
+                    hintDiv.id = 'talkHint';
+                    hintDiv.textContent = 'Ketik pesan dulu ya! / Please type a message first!';
+                    hintDiv.style.cssText = 'color: #e74c3c; font-size: 0.85rem; margin-top: 8px; text-align: center;';
+                    const talkInput = document.getElementById('talkInput');
+                    if (!document.getElementById('talkHint')) {
+                        talkInput.appendChild(hintDiv);
+                    }
+                    setTimeout(() => hintDiv.remove(), 3000);
+                    return;
+                }
                 document.getElementById('talkMessage').value = '';
             }
 
@@ -1931,6 +2214,18 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             try {
                 const response = await callQwenText(actionConfig.id, userMessage);
                 displayResponse(response, actionConfig.label);
+                
+                // Add to conversation history
+                state.conversationHistory.push({
+                    action: actionConfig.label,
+                    message: userMessage,
+                    response: response.response || '...'
+                });
+                
+                // Keep only last 5 exchanges
+                if (state.conversationHistory.length > 5) {
+                    state.conversationHistory.shift();
+                }
             } catch (error) {
                 console.error('Interaction error:', error);
                 if (error.name === 'AbortError') {
@@ -1953,6 +2248,7 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
                 case 'feed':
                     state.currentStats.hunger = Math.max(0, state.currentStats.hunger - 20);
                     state.currentStats.happiness = Math.min(100, state.currentStats.happiness + 15);
+                    state.currentStats.cuteness = Math.min(100, state.currentStats.cuteness + 3);
                     break;
                 case 'play':
                     state.currentStats.energy = Math.max(0, state.currentStats.energy - 15);
@@ -1964,13 +2260,16 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
                 case 'cuddle':
                     state.currentStats.loyalty = Math.min(100, state.currentStats.loyalty + 10);
                     state.currentStats.happiness = Math.min(100, state.currentStats.happiness + 10);
+                    state.currentStats.cuteness = Math.min(100, state.currentStats.cuteness + 5);
                     break;
                 case 'sleep':
                     state.currentStats.energy = Math.min(100, state.currentStats.energy + 20);
-                    state.currentStats.hunger = Math.min(100, state.currentStats.hunger + 10);
+                    state.currentStats.hunger = Math.max(0, state.currentStats.hunger - 10);
+                    state.currentStats.mischief = Math.max(0, state.currentStats.mischief - 5);
                     break;
                 case 'talk':
                     state.currentStats.happiness = Math.min(100, state.currentStats.happiness + 5);
+                    state.currentStats.wisdom = Math.min(100, state.currentStats.wisdom + 5);
                     break;
             }
 
@@ -1996,6 +2295,13 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
         async function callQwenText(action, userMessage) {
             const systemPrompt = `You are a digital pet twin AI. You ALWAYS respond in character as the specified pet. Never break character. Never say you are an AI. Respond ONLY in valid JSON. No markdown. No text outside the JSON.`;
 
+            // Build conversation context from history (last 3 exchanges)
+            const conversationContext = state.conversationHistory.length > 0 
+                ? '\n\nRECENT CONVERSATION:\n' + state.conversationHistory.slice(-3).map(ex => 
+                    `Owner: ${ex.action}${ex.message ? ': ' + ex.message : ''}\n${state.twinProfile.twinName}: ${ex.response}`
+                ).join('\n\n')
+                : '';
+
             const userPrompt = `You are ${state.twinProfile.twinName}, a digital pet twin.
 
 YOUR PERSONALITY:
@@ -2013,10 +2319,11 @@ YOUR CURRENT STATE:
 - Mischief: ${state.currentStats.mischief}/100
 - Cuteness: ${state.currentStats.cuteness}/100
 - Loyalty: ${state.currentStats.loyalty}/100
+${conversationContext}
 
 THE OWNER JUST DID: ${action}${userMessage ? ': ' + userMessage : ''}
 
-Respond as this pet would. Stay in character. Reference your personality, current mood, and stats.
+Respond as this pet would. Stay in character. Reference your personality, current mood, and stats.${conversationContext ? ' Consider the recent conversation for context.' : ''}
 
 Respond in this JSON format:
 {
@@ -2060,14 +2367,29 @@ Respond in this JSON format:
             }
 
             const data = await response.json();
-            return data.choices[0].message.content;
+            const content = data.choices[0].message.content;
+            
+            // Use robust JSON extraction
+            try {
+                return extractJSON(content);
+            } catch (e) {
+                console.error('JSON extraction failed:', e);
+                // Return fallback response
+                return {
+                    response: content.substring(0, 200) || '...',
+                    newMood: 'senang',
+                    moodEmoji: '🐾',
+                    statChanges: {},
+                    physicalAction: 'mengangguk'
+                };
+            }
         }
 
         function displayResponse(responseData, actionLabel) {
             const bubble = document.getElementById('responseBubble');
             
-            // Parse JSON response if string, or use object directly
-            let data;
+            // responseData is already parsed JSON from callQwenText
+            let data = responseData;
             try {
                 data = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
             } catch (e) {
@@ -2145,11 +2467,19 @@ Respond in this JSON format:
         });
 
         async function runDiagnostics() {
+            // Confirm before showing sensitive data
+            if (!confirm('Run diagnostics? This will display system information in the browser console.\n\nJalankan diagnostik? Ini akan menampilkan info sistem di console browser.')) {
+                return;
+            }
+            
             console.log('🔍 Running Peliharaan AI Diagnostics...\n');
             
-            // Test 1: API Key
+            // Test 1: API Key (masked for security)
             const apiKey = state.apiKey;
-            console.log(`✅ API Key: ${apiKey ? 'Present (' + apiKey.substring(0, 10) + '...)' : 'MISSING (memory only per TRD)'}`);
+            const maskedKey = apiKey 
+                ? `${apiKey.substring(0, 6)}...${apiKey.slice(-4)}` 
+                : 'MISSING';
+            console.log(`✅ API Key: ${apiKey ? 'Present (' + maskedKey + ')' : 'MISSING (memory only per TRD)'}`);
             
             // Test 2: State
             console.log(`✅ Photos: ${state.photos.length} uploaded`);
