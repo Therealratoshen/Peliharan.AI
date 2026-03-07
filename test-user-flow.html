@@ -258,6 +258,11 @@
         
         // Extract these functions from index.html for testing
         function extractJSON(content) {
+            // Guard against null/undefined/empty input
+            if (!content || typeof content !== 'string') {
+                throw new Error('No JSON found in response');
+            }
+            
             // Try direct parse first
             try {
                 const direct = JSON.parse(content);
