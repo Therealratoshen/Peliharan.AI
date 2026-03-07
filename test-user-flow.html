@@ -257,26 +257,32 @@
         // ===== UNIT TESTS FOR PURE FUNCTIONS =====
         
         // Extract these functions from index.html for testing
-        function extractJSON(text) {
-            if (!text) return null;
-            text = text.trim();
-            // Strip markdown code blocks
-            if (text.startsWith('```json')) {
-                text = text.substring(7);
-                if (text.endsWith('```')) text = text.substring(0, text.length - 3);
-            } else if (text.startsWith('```')) {
-                text = text.substring(3);
-                if (text.endsWith('```')) text = text.substring(0, text.length - 3);
-            }
-            text = text.trim();
-            // Find JSON boundaries
-            const start = text.indexOf('{');
-            const end = text.lastIndexOf('}');
-            if (start === -1 || end === -1 || start >= end) return null;
+        function extractJSON(content) {
+            // Try direct parse first
             try {
-                return JSON.parse(text.substring(start, end + 1));
+                const direct = JSON.parse(content);
+                return direct;
             } catch (e) {
-                return null;
+                // Continue to extraction
+            }
+            
+            // Remove markdown code blocks if present
+            content = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+            
+            // Extract JSON from response (find first { and last })
+            const startIdx = content.indexOf('{');
+            const endIdx = content.lastIndexOf('}');
+            if (startIdx === -1 || endIdx === -1 || startIdx >= endIdx) {
+                throw new Error('No JSON found in response');
+            }
+            
+            const jsonStr = content.substring(startIdx, endIdx + 1);
+            
+            // Validate with try/catch
+            try {
+                return JSON.parse(jsonStr);
+            } catch (e) {
+                throw new Error(`Invalid JSON: ${e.message}`);
             }
         }
 
@@ -309,14 +315,23 @@
         function isRamadanPeriod() {
             const now = new Date();
             const year = now.getFullYear();
-            // Ramadan 2025: Feb 28 - Mar 30
-            // Ramadan 2026: Feb 17 - Mar 18
+            // Approximate Ramadan dates for 2025-2027
             const ramadanDates = {
                 2025: { start: new Date('2025-02-28'), end: new Date('2025-03-30') },
-                2026: { start: new Date('2026-02-17'), end: new Date('2026-03-18') }
+                2026: { start: new Date('2026-02-18'), end: new Date('2026-03-20') },
+                2027: { start: new Date('2027-02-08'), end: new Date('2027-03-09') }
             };
-            if (!ramadanDates[year]) return false;
-            return now >= ramadanDates[year].start && now <= ramadanDates[year].end;
+            
+            const ramadan = ramadanDates[year];
+            if (!ramadan) return false;
+            
+            // Add 2-day buffer
+            const start = new Date(ramadan.start);
+            start.setDate(start.getDate() - 2);
+            const end = new Date(ramadan.end);
+            end.setDate(end.getDate() + 2);
+            
+            return now >= start && now <= end;
         }
 
         // Run tests
@@ -342,7 +357,7 @@
 
         function runUnitTests() {
             TestRunner.suite('Unit Tests: extractJSON()', () => {
-                TestRunner.test('parses valid JSON', () => {
+                TestRunner.test('parses valid JSON directly', () => {
                     const result = extractJSON('{"name": "test", "value": 123}');
                     TestRunner.assertEqual(result.name, 'test');
                     TestRunner.assertEqual(result.value, 123);
@@ -358,14 +373,13 @@
                     TestRunner.assertEqual(result.outer.inner, 'value');
                 });
                 
-                TestRunner.test('returns null for invalid JSON', () => {
-                    const result = extractJSON('not json');
-                    TestRunner.assertNull(result);
+                TestRunner.test('throws on invalid JSON', () => {
+                    TestRunner.assertThrows(() => extractJSON('not json'), 'Should throw for invalid JSON');
                 });
                 
-                TestRunner.test('returns null for empty input', () => {
-                    TestRunner.assertNull(extractJSON(''));
-                    TestRunner.assertNull(extractJSON(null));
+                TestRunner.test('throws on empty input', () => {
+                    TestRunner.assertThrows(() => extractJSON(''), 'Should throw for empty string');
+                    TestRunner.assertThrows(() => extractJSON(null), 'Should throw for null');
                 });
             });
 

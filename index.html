@@ -2512,20 +2512,15 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             }
 
             const data = await response.json();
-            let content = data.choices[0].message.content;
             
-            // Remove markdown code blocks if present
-            content = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
-            
-            // Extract JSON from response (find first { and last })
-            const startIdx = content.indexOf('{');
-            const endIdx = content.lastIndexOf('}');
-            if (startIdx === -1 || endIdx === -1 || startIdx >= endIdx) {
-                throw new Error('No JSON found in response');
+            // Null safety check for API response structure
+            const content = data.choices?.[0]?.message?.content;
+            if (!content) {
+                throw new Error('Invalid API response structure');
             }
             
-            const jsonStr = content.substring(startIdx, endIdx + 1);
-            return JSON.parse(jsonStr);
+            // Use extractJSON for DRY principle
+            return extractJSON(content);
         }
 
         // ===== AI IMAGE GENERATION =====
@@ -2713,8 +2708,13 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             const avatar = document.getElementById('twinAvatar');
             const profile = state.twinProfile;
             
-            // Show AI image
-            avatar.innerHTML = `<img src="${imageUrl}" alt="${profile.twinName} AI" id="avatarImage">`;
+            // Show AI image using safe DOM manipulation
+            avatar.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = sanitizeInput(profile.twinName) + ' AI';
+            img.id = 'avatarImage';
+            avatar.appendChild(img);
             
             // Show toggle buttons
             const toggle = document.getElementById('avatarToggle');
@@ -2875,7 +2875,13 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             if (certExtras.length > 0) {
                 const extrasDiv = document.createElement('div');
                 extrasDiv.className = 'cert-extras';
-                extrasDiv.innerHTML = certExtras.map(e => `<p style="margin: 4px 0; font-size: 0.85rem; color: #666;">${e}</p>`).join('');
+                // Use safe DOM manipulation
+                certExtras.forEach(e => {
+                    const p = document.createElement('p');
+                    p.style.cssText = 'margin: 4px 0; font-size: 0.85rem; color: #666;';
+                    p.textContent = e;
+                    extrasDiv.appendChild(p);
+                });
                 const certContent = document.getElementById('certificateContent');
                 if (certContent) {
                     certContent.appendChild(extrasDiv);
@@ -2897,7 +2903,14 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             
             const avatarContainer = document.getElementById('twinAvatar');
             const profile = state.twinProfile;
-            avatarContainer.innerHTML = `<img src="${state.photos[index]}" alt="${profile.twinName}" id="avatarImage">`;
+            
+            // Use safe DOM manipulation
+            avatarContainer.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = state.photos[index];
+            img.alt = sanitizeInput(profile.twinName);
+            img.id = 'avatarImage';
+            avatarContainer.appendChild(img);
             
             // Update active thumbnail
             document.querySelectorAll('.photo-thumbnail').forEach((thumb, i) => {
@@ -2934,7 +2947,12 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             const imgSrc = profile.generatedImage || state.photos[0];
             const petViewImage = document.getElementById('petViewImage');
             if (petViewImage && imgSrc) {
-                petViewImage.innerHTML = `<img src="${imgSrc}" alt="${profile.twinName}">`;
+                // Use safe DOM manipulation
+                petViewImage.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = sanitizeInput(profile.twinName);
+                petViewImage.appendChild(img);
             }
             
             const petViewName = document.getElementById('petViewName');
@@ -3243,7 +3261,7 @@ Respond in this JSON format:
                 if (petViewMood) petViewMood.textContent = data.newMood;
             }
             
-            // Apply stat changes if provided
+            // Apply stat changes if provided (all 5 stats)
             if (data.statChanges) {
                 if (data.statChanges.energy) {
                     state.currentStats.energy = Math.max(0, Math.min(100, state.currentStats.energy + data.statChanges.energy));
@@ -3259,6 +3277,16 @@ Respond in this JSON format:
                     state.currentStats.cuteness = Math.max(0, Math.min(100, state.currentStats.cuteness + data.statChanges.cuteness));
                     document.getElementById('statCuteness').style.width = `${state.currentStats.cuteness}%`;
                     document.getElementById('valCuteness').textContent = state.currentStats.cuteness;
+                }
+                if (data.statChanges.wisdom) {
+                    state.currentStats.wisdom = Math.max(0, Math.min(100, state.currentStats.wisdom + data.statChanges.wisdom));
+                    document.getElementById('statWisdom').style.width = `${state.currentStats.wisdom}%`;
+                    document.getElementById('valWisdom').textContent = state.currentStats.wisdom;
+                }
+                if (data.statChanges.loyalty) {
+                    state.currentStats.loyalty = Math.max(0, Math.min(100, state.currentStats.loyalty + data.statChanges.loyalty));
+                    document.getElementById('statLoyalty').style.width = `${state.currentStats.loyalty}%`;
+                    document.getElementById('valLoyalty').textContent = state.currentStats.loyalty;
                 }
             }
             
