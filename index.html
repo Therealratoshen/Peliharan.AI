@@ -671,6 +671,185 @@
             100% { background-position: -200% 0; }
         }
         
+        /* ===== FULL-SCREEN PET VIEW ===== */
+        .pet-view-container {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .pet-view-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .pet-view-back:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        
+        .pet-view-image {
+            width: 65vw;
+            max-width: 380px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(78, 205, 196, 0.4), 0 0 120px rgba(78, 205, 196, 0.2);
+            animation: petBreathing 3s ease-in-out infinite;
+            border: 4px solid rgba(255,255,255,0.1);
+        }
+        
+        .pet-view-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        @keyframes petBreathing {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        
+        .pet-view-info {
+            text-align: center;
+            margin-top: 28px;
+            z-index: 10;
+        }
+        
+        .pet-view-name {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .pet-view-mood {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .pet-view-interact-btn {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 56px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 30px rgba(78, 205, 196, 0.5);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .pet-view-interact-btn:hover {
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 8px 35px rgba(78, 205, 196, 0.6);
+        }
+        
+        .pet-view-interact-btn:active {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* ===== BOTTOMSHEET ===== */
+        .bottomsheet-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+        
+        .bottomsheet-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .bottomsheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            z-index: 999;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 75vh;
+            overflow-y: auto;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+        }
+        
+        .bottomsheet.open {
+            transform: translateY(0);
+        }
+        
+        .bottomsheet-handle {
+            width: 48px;
+            height: 5px;
+            background: #ddd;
+            border-radius: 3px;
+            margin: 12px auto 20px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .bottomsheet-handle:hover {
+            background: #bbb;
+        }
+        
+        .bottomsheet-header {
+            padding: 0 24px 16px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bottomsheet-header h3 {
+            font-size: 1.3rem;
+            color: var(--text);
+        }
+        
+        .bottomsheet-content {
+            padding: 20px 24px 32px;
+        }
+        
+        .bottomsheet .interaction-grid {
+            margin: 0 0 20px;
+        }
+        
+        .bottomsheet .response-bubble {
+            margin-top: 16px;
+        }
+        
         .avatar-loading-text {
             margin-top: 8px;
             font-size: 0.75rem;
@@ -1632,24 +1811,39 @@
                 </div>
 
                 <div class="btn-group">
-                    <button class="btn btn-primary" onclick="showSection('interact')">Interaksi / Interact</button>
+                    <button class="btn btn-primary" onclick="showPetView()">Interaksi / Interact</button>
                     <button class="btn btn-accent" onclick="showSection('certificate')">Sertifikat / Certificate</button>
                 </div>
             </div>
         </section>
 
-        <!-- Section 7: Interaction Zone -->
-        <section class="section" id="interact">
-            <div class="card">
-                <div class="card-header">
-                    <h2>Zona Interaksi</h2>
-                    <p class="subtitle">Interaction Zone</p>
-                    <div class="mood-indicator">
-                        <span>Mood:</span>
-                        <span id="interactMood">-</span>
-                    </div>
+        <!-- Section 7: Full-screen Pet View + Interact Bottomsheet -->
+        <section class="section" id="petView">
+            <div class="pet-view-container">
+                <button class="pet-view-back" onclick="showSection('profile')">← Profil</button>
+                <div class="pet-view-image" id="petViewImage"></div>
+                <div class="pet-view-info">
+                    <h2 class="pet-view-name" id="petViewName">-</h2>
+                    <div class="pet-view-mood" id="petViewMood">-</div>
                 </div>
+                <button class="pet-view-interact-btn" onclick="openBottomsheet()">
+                    Interaksi / Interact
+                </button>
+            </div>
+        </section>
 
+        <!-- Bottomsheet Overlay -->
+        <div class="bottomsheet-overlay" id="bottomsheetOverlay" onclick="closeBottomsheet()"></div>
+        <div class="bottomsheet" id="interactBottomsheet">
+            <div class="bottomsheet-handle" onclick="toggleBottomsheet()"></div>
+            <div class="bottomsheet-header">
+                <h3>Zona Interaksi</h3>
+                <div class="mood-indicator">
+                    <span>Mood:</span>
+                    <span id="interactMood">-</span>
+                </div>
+            </div>
+            <div class="bottomsheet-content">
                 <div class="interaction-grid">
                     <button class="interaction-btn" onclick="interact('feed')">
                         <span class="interaction-icon">🍖</span>
@@ -1681,11 +1875,6 @@
                 <div class="response-bubble" id="responseBubble" style="display: none;">
                     <p class="response-text" id="responseText">-</p>
                     <p class="response-meta" id="responseMeta">-</p>
-                </div>
-
-                <div class="btn-group" style="margin-top: 24px;">
-                    <button class="btn btn-secondary" onclick="showSection('profile')">Kembali ke Profil</button>
-                    <button class="btn btn-accent" onclick="showSection('certificate')">Sertifikat</button>
                 </div>
             </div>
         </section>
@@ -1740,7 +1929,7 @@
             <div class="btn-group" style="margin-top: 24px;">
                 <button class="btn btn-primary" onclick="printCertificate()">Cetak / Print</button>
                 <button class="btn btn-accent" onclick="showSection('share')">Bagikan / Share</button>
-                <button class="btn btn-secondary" onclick="showSection('interact')">Kembali</button>
+                <button class="btn btn-secondary" onclick="showPetView()">Kembali</button>
             </div>
         </section>
 
@@ -1879,7 +2068,7 @@
             document.getElementById(sectionId).classList.add('active');
             
             // Update nav dots
-            const sections = ['hero', 'apiKey', 'upload', 'form', 'generating', 'profile', 'interact', 'certificate', 'share'];
+            const sections = ['hero', 'apiKey', 'upload', 'form', 'generating', 'profile', 'petView', 'certificate', 'share'];
             const currentIndex = sections.indexOf(sectionId);
             document.querySelectorAll('.nav-dot').forEach((dot, index) => {
                 dot.classList.remove('active', 'completed');
@@ -1889,6 +2078,11 @@
 
             // Hide nav on hero
             document.getElementById('navProgress').style.display = sectionId === 'hero' ? 'none' : 'flex';
+            
+            // Close bottomsheet when navigating away from petView
+            if (sectionId !== 'petView') {
+                closeBottomsheet();
+            }
         }
 
         // ===== API KEY =====
@@ -2331,34 +2525,32 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
         
         // Generate AI twin image using Wanx
         async function generateTwinImage(profile) {
-            if (!profile.physicalDescription) {
-                console.log('No physical description available for image generation');
+            // Need actual photos for image-to-image generation
+            if (state.photos.length === 0) {
+                console.log('No photos available for image generation');
                 return null;
             }
             
-            const prompt = `Photorealistic pet portrait of ${profile.speciesTitle}, ${profile.physicalDescription}. Enhanced digital photography, subtle glowing aura around the pet, enhanced eye detail with slight luminosity, professional studio lighting, slightly ethereal atmosphere, high detail fur/feathers texture, majestic pose, clean background, 4K quality, digital art style but photorealistic`;
-            
-            const negativePrompt = 'cartoon, anime, illustration, drawing, painting, blurry, low quality, distorted, scary, dark, deformed, ugly, bad anatomy, watermark, signature, text';
-            
+            // Try image-to-image generation first (preserves pet appearance)
             try {
-                console.log('🎨 Starting AI image generation...');
+                console.log('🎨 Starting AI image generation with photo reference...');
                 
-                // Start image generation task
-                const response = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/image-generation/generation', {
+                const response = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/image2image/image-synthesis', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.apiKey}`
+                        'Authorization': `Bearer ${state.apiKey}`,
+                        'X-DashScope-Async': 'enable'
                     },
                     body: JSON.stringify({
-                        model: 'wanx2.1-t2i-turbo',
+                        model: 'wanx2.1-imageedit',
                         input: {
-                            prompt: prompt,
-                            negative_prompt: negativePrompt
+                            function: 'stylization_all',
+                            base_image_url: state.photos[0],
+                            prompt: `Enhanced digital twin portrait of ${profile.speciesTitle}. Subtle glowing aura, enhanced eye detail with slight luminosity, professional studio lighting, slightly ethereal digital atmosphere, high detail fur/feathers texture, 4K quality, photorealistic but digitally enhanced`
                         },
                         parameters: {
-                            n: 1,
-                            size: '1024*1024'
+                            n: 1
                         }
                     })
                 });
@@ -2383,7 +2575,64 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
                 return imageUrl;
                 
             } catch (error) {
-                console.error('Image generation error:', error);
+                console.warn('Image-to-image generation failed, falling back to text-to-image:', error);
+                
+                // Fallback to text-to-image if image-to-image fails
+                return generateTwinImageFallback(profile);
+            }
+        }
+        
+        // Fallback: Text-to-image generation (original method)
+        async function generateTwinImageFallback(profile) {
+            if (!profile.physicalDescription) {
+                console.log('No physical description available for fallback generation');
+                return null;
+            }
+            
+            const prompt = `Photorealistic pet portrait of ${profile.speciesTitle}, ${profile.physicalDescription}. Enhanced digital photography, subtle glowing aura around the pet, enhanced eye detail with slight luminosity, professional studio lighting, slightly ethereal atmosphere, high detail fur/feathers texture, majestic pose, clean background, 4K quality, digital art style but photorealistic`;
+            
+            const negativePrompt = 'cartoon, anime, illustration, drawing, painting, blurry, low quality, distorted, scary, dark, deformed, ugly, bad anatomy, watermark, signature, text';
+            
+            try {
+                console.log('🎨 Starting fallback text-to-image generation...');
+                
+                const response = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/image-generation/generation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'wanx2.1-t2i-turbo',
+                        input: {
+                            prompt: prompt,
+                            negative_prompt: negativePrompt
+                        },
+                        parameters: {
+                            n: 1,
+                            size: '1024*1024'
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback generation failed: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const taskId = data.output?.task_id;
+                
+                if (!taskId) {
+                    throw new Error('No task ID received');
+                }
+                
+                const imageUrl = await pollTaskStatus(taskId);
+                
+                console.log('✅ Fallback image generated successfully');
+                return imageUrl;
+                
+            } catch (error) {
+                console.error('Fallback generation error:', error);
                 return null;
             }
         }
@@ -2633,6 +2882,51 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             document.querySelectorAll('.photo-thumbnail').forEach((thumb, i) => {
                 thumb.classList.toggle('active', i === index);
             });
+        }
+
+        // ===== PET VIEW & BOTTOMSHEET =====
+        function openBottomsheet() {
+            document.getElementById('interactBottomsheet').classList.add('open');
+            document.getElementById('bottomsheetOverlay').classList.add('active');
+            // Hide the interact button when sheet is open
+            const interactBtn = document.querySelector('.pet-view-interact-btn');
+            if (interactBtn) interactBtn.style.display = 'none';
+        }
+
+        function closeBottomsheet() {
+            document.getElementById('interactBottomsheet').classList.remove('open');
+            document.getElementById('bottomsheetOverlay').classList.remove('active');
+            const interactBtn = document.querySelector('.pet-view-interact-btn');
+            if (interactBtn) interactBtn.style.display = '';
+        }
+
+        function toggleBottomsheet() {
+            const bs = document.getElementById('interactBottomsheet');
+            bs.classList.contains('open') ? closeBottomsheet() : openBottomsheet();
+        }
+
+        function showPetView() {
+            // Populate pet view with current pet image and info
+            const profile = state.twinProfile;
+            if (!profile) return;
+            
+            const imgSrc = profile.generatedImage || state.photos[0];
+            const petViewImage = document.getElementById('petViewImage');
+            if (petViewImage && imgSrc) {
+                petViewImage.innerHTML = `<img src="${imgSrc}" alt="${profile.twinName}">`;
+            }
+            
+            const petViewName = document.getElementById('petViewName');
+            if (petViewName) petViewName.textContent = profile.twinName;
+            
+            const petViewMood = document.getElementById('petViewMood');
+            if (petViewMood) petViewMood.textContent = profile.currentMood;
+            
+            // Also update the bottomsheet mood indicator
+            const interactMood = document.getElementById('interactMood');
+            if (interactMood) interactMood.textContent = profile.currentMood;
+            
+            showSection('petView');
         }
 
         // ===== INTERACTION =====
