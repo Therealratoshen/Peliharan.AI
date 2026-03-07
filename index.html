@@ -2285,12 +2285,49 @@
             }
         }
         
-        // Language state
+        // Language state and translations
         let currentLang = 'ID';
+        
+        const translations = {
+            ID: {
+                heroTagline: 'Hewan peliharaanmu, hidup di dunia digital',
+                heroSubtitle: 'Your real pet. Digitally alive.',
+                createTwinBtn: 'Buat Kembaran Digital',
+                apiConfigTitle: 'Konfigurasi API',
+                apiConfigSubtitle: 'API Configuration',
+                apiKeyLabel: 'Alibaba Cloud Model Studio API Key',
+                apiKeyHint: 'Dapatkan API key dari Alibaba Cloud Model Studio. Must start with "sk-".',
+                saveBtn: 'Simpan',
+                backBtn: 'Kembali',
+                reqTitle: '📋 Persyaratan',
+                reqText: 'Anda perlu memiliki akun Alibaba Cloud yang aktif untuk mendapatkan API key.',
+                reqLink: 'Daftar Alibaba Cloud'
+            },
+            EN: {
+                heroTagline: 'Your pet, alive in the digital world',
+                heroSubtitle: 'Your real pet. Digitally alive.',
+                createTwinBtn: 'Create Digital Twin',
+                apiConfigTitle: 'API Configuration',
+                apiConfigSubtitle: 'API Settings',
+                apiKeyLabel: 'Alibaba Cloud Model Studio API Key',
+                apiKeyHint: 'Get your API key from Alibaba Cloud Model Studio. Must start with "sk-".',
+                saveBtn: 'Save',
+                backBtn: 'Back',
+                reqTitle: '📋 Requirements',
+                reqText: 'You need to have an active Alibaba Cloud account to obtain an API key.',
+                reqLink: 'Sign up for Alibaba Cloud'
+            }
+        };
         
         // Toggle language between Indonesian and English
         function toggleLanguage() {
             currentLang = currentLang === 'ID' ? 'EN' : 'ID';
+            applyTranslations();
+        }
+        
+        // Apply translations to all elements
+        function applyTranslations() {
+            const t = translations[currentLang];
             
             // Update language switcher button display
             const langDisplay = document.getElementById('currentLangDisplay');
@@ -2305,15 +2342,43 @@
                 }
             }
             
-            // Update UI elements based on language
-            const elements = document.querySelectorAll('[data-id], [data-en]');
-            elements.forEach(el => {
-                if (currentLang === 'ID' && el.dataset.id) {
-                    el.textContent = el.dataset.id;
-                } else if (currentLang === 'EN' && el.dataset.en) {
-                    el.textContent = el.dataset.en;
-                }
-            });
+            // Hero section
+            const heroTagline = document.querySelector('.hero-tagline');
+            const heroSubtitle = document.querySelector('.hero-subtitle');
+            const createBtn = document.querySelector('#hero .btn-primary');
+            
+            if (heroTagline) heroTagline.textContent = t.heroTagline;
+            if (heroSubtitle) heroSubtitle.textContent = t.heroSubtitle;
+            if (createBtn) createBtn.textContent = t.createTwinBtn;
+            
+            // API Key section
+            const apiTitle = document.querySelector('#apiKey h2');
+            const apiSubtitle = document.querySelector('#apiKey .subtitle');
+            const apiLabel = document.querySelector('#apiKey label');
+            const apiHint = document.querySelector('#apiKey .input-hint');
+            const reqTitle = document.querySelector('.api-info-box strong');
+            const reqText = document.querySelector('.api-info-box p:nth-child(2)');
+            const reqLink = document.querySelector('.api-info-box a');
+            const saveBtn = document.querySelector('#apiKey .btn-primary');
+            const backBtn = document.querySelector('#apiKey .btn-secondary');
+            
+            if (apiTitle) apiTitle.textContent = t.apiConfigTitle;
+            if (apiSubtitle) apiSubtitle.textContent = t.apiConfigSubtitle;
+            if (apiLabel) {
+                const labelText = apiLabel.childNodes[0];
+                if (labelText) labelText.textContent = t.apiKeyLabel + ' ';
+            }
+            if (apiHint) {
+                const lines = apiHint.innerHTML.split('<br>');
+                if (lines[0]) lines[0] = t.apiKeyHint.split('. ')[0] + '.';
+                if (lines[1]) lines[1] = t.apiKeyHint.split('. ')[1] || lines[1];
+                apiHint.innerHTML = lines.join('<br>');
+            }
+            if (reqTitle) reqTitle.textContent = t.reqTitle;
+            if (reqText) reqText.textContent = t.reqText;
+            if (reqLink) reqLink.textContent = t.reqLink + ' →';
+            if (saveBtn) saveBtn.textContent = t.saveBtn;
+            if (backBtn) backBtn.textContent = t.backBtn;
             
             // Show feedback
             const message = currentLang === 'ID' ? 'Bahasa diubah ke Indonesia' : 'Language switched to English';
@@ -2396,9 +2461,10 @@
             });
         }
         
-        // Initialize pet interaction when hero section is shown
+        // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             initPetInteraction();
+            applyTranslations(); // Apply initial language
         });
         
         // Show upload feedback message
