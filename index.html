@@ -1327,7 +1327,7 @@
             <div class="nav-dot" data-section="form"></div>
             <div class="nav-dot" data-section="generating"></div>
             <div class="nav-dot" data-section="profile"></div>
-            <div class="nav-dot" data-section="interact"></div>
+            <div class="nav-dot" data-section="petView"></div>
             <div class="nav-dot" data-section="certificate"></div>
             <div class="nav-dot" data-section="share"></div>
         </div>
@@ -1813,6 +1813,7 @@
                 <div class="btn-group">
                     <button class="btn btn-primary" onclick="showPetView()">Interaksi / Interact</button>
                     <button class="btn btn-accent" onclick="showSection('certificate')">Sertifikat / Certificate</button>
+                    <button class="btn btn-secondary" onclick="showSection('share')">Bagikan / Share</button>
                 </div>
             </div>
         </section>
@@ -2083,6 +2084,9 @@
             if (sectionId !== 'petView') {
                 closeBottomsheet();
             }
+            
+            // Scroll to top on section change
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // ===== API KEY =====
@@ -2773,11 +2777,18 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             document.getElementById('hybridBadge').style.display = isHybrid ? 'inline-block' : 'none';
             document.getElementById('twinBackstory').textContent = profile.backstory;
             
+            // Remove existing dynamic elements to prevent duplicates
+            document.querySelectorAll('.physical-description, .daily-schedule, .hybrid-origins, .cert-extras').forEach(el => el.remove());
+            
             // Show physical description if available
             if (profile.physicalDescription) {
                 const physDiv = document.createElement('div');
                 physDiv.className = 'physical-description';
-                physDiv.innerHTML = `<strong>🐾 Penampilan:</strong> ${profile.physicalDescription}`;
+                const strong = document.createElement('strong');
+                strong.textContent = '🐾 Penampilan: ';
+                physDiv.appendChild(strong);
+                const text = document.createTextNode(sanitizeInput(profile.physicalDescription));
+                physDiv.appendChild(text);
                 physDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 0.9rem; line-height: 1.5;';
                 document.getElementById('twinBackstory').parentNode.insertBefore(physDiv, document.getElementById('twinBackstory').nextSibling);
             }
@@ -2786,7 +2797,11 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             if (profile.dailySchedule) {
                 const scheduleDiv = document.createElement('div');
                 scheduleDiv.className = 'daily-schedule';
-                scheduleDiv.innerHTML = `<strong>📅 Rutinitas:</strong> ${profile.dailySchedule}`;
+                const strong = document.createElement('strong');
+                strong.textContent = '📅 Rutinitas: ';
+                scheduleDiv.appendChild(strong);
+                const text = document.createTextNode(sanitizeInput(profile.dailySchedule));
+                scheduleDiv.appendChild(text);
                 scheduleDiv.style.cssText = 'margin-top: 8px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 0.9rem; line-height: 1.5;';
                 const refNode = document.querySelector('.physical-description') || document.getElementById('twinBackstory');
                 refNode.parentNode.insertBefore(scheduleDiv, refNode.nextSibling);
@@ -2796,7 +2811,11 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             if (isHybrid && profile.hybridOrigins && profile.hybridOrigins.length > 0) {
                 const originsDiv = document.createElement('div');
                 originsDiv.className = 'hybrid-origins';
-                originsDiv.innerHTML = `<strong>⚡ Fusion dari:</strong> ${profile.hybridOrigins.join(', ')}`;
+                const strong = document.createElement('strong');
+                strong.textContent = '⚡ Fusion dari: ';
+                originsDiv.appendChild(strong);
+                const text = document.createTextNode(profile.hybridOrigins.map(sanitizeInput).join(', '));
+                originsDiv.appendChild(text);
                 originsDiv.style.cssText = 'margin-top: 8px; padding: 8px; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 0.9rem;';
                 const refNode = document.querySelector('.daily-schedule') || document.querySelector('.physical-description') || document.getElementById('twinBackstory');
                 refNode.parentNode.insertBefore(originsDiv, refNode.nextSibling);
@@ -2835,10 +2854,8 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             document.getElementById('certRealName').textContent = state.formData.petName;
             document.getElementById('certTwinName').textContent = profile.twinName;
             document.getElementById('certSpecies').textContent = state.formData.species;
-            // Use birth date if available, otherwise current date
-            const certDate = state.formData.birthDate 
-                ? new Date(state.formData.birthDate).toLocaleDateString('id-ID')
-                : new Date().toLocaleDateString('id-ID');
+            // Use creation date (current date when twin was generated)
+            const certDate = new Date().toLocaleDateString('id-ID');
             document.getElementById('certDate').textContent = certDate;
             document.getElementById('certPersonality').textContent = profile.personalityType;
             document.getElementById('certTraits').textContent = state.formData.habits.slice(0, 3).join(', ') || 'Unik dan istimewa';
@@ -2856,9 +2873,9 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
                 const extrasDiv = document.createElement('div');
                 extrasDiv.className = 'cert-extras';
                 extrasDiv.innerHTML = certExtras.map(e => `<p style="margin: 4px 0; font-size: 0.85rem; color: #666;">${e}</p>`).join('');
-                const certInfo = document.querySelector('.certificate-info');
-                if (certInfo) {
-                    certInfo.appendChild(extrasDiv);
+                const certContent = document.getElementById('certificateContent');
+                if (certContent) {
+                    certContent.appendChild(extrasDiv);
                 }
             }
 
@@ -2866,7 +2883,8 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             const shareBase = `Meet ${profile.twinName}, my digital pet twin! 🐾\n\n"${profile.firstWords}"\n\nCreated with Peliharaan AI powered by Alibaba Cloud Qwen.`;
             
             document.getElementById('whatsappText').textContent = shareBase + '\n\n#PeliharaanAI #DigitalPetTwin';
-            document.getElementById('instagramText').textContent = shareBase + '\n\n🌙 ' + profile.ramadanWish + '\n\n#PeliharaanAI #DigitalPetTwin #AI #PetLovers #Ramadan';
+            const ramadanText = isRamadanPeriod() && profile.ramadanWish ? '\n\n🌙 ' + profile.ramadanWish : '';
+                        document.getElementById('instagramText').textContent = shareBase + ramadanText + '\n\n#PeliharaanAI #DigitalPetTwin #AI #PetLovers #Ramadan';
             document.getElementById('twitterText').textContent = profile.memeCaption + '\n\n— ' + profile.twinName + '\n\n#PeliharaanAI #DigitalPetTwin';
         }
         
@@ -2919,12 +2937,19 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             const petViewName = document.getElementById('petViewName');
             if (petViewName) petViewName.textContent = profile.twinName;
             
+            // Calculate current mood from stats
+            let mood = 'Santai / Relaxed';
+            if (state.currentStats.hunger > 60) mood = 'Lapar / Hungry';
+            else if (state.currentStats.energy < 20) mood = 'Lelah / Tired';
+            else if (state.currentStats.happiness > 80) mood = 'Bahagia / Happy';
+            else if (state.currentStats.mischief > 70) mood = 'Ingin nakal / Mischievous';
+            
             const petViewMood = document.getElementById('petViewMood');
-            if (petViewMood) petViewMood.textContent = profile.currentMood;
+            if (petViewMood) petViewMood.textContent = mood;
             
             // Also update the bottomsheet mood indicator
             const interactMood = document.getElementById('interactMood');
-            if (interactMood) interactMood.textContent = profile.currentMood;
+            if (interactMood) interactMood.textContent = mood;
             
             showSection('petView');
         }
@@ -2990,6 +3015,16 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
                 btn.style.opacity = '0.5';
                 btn.style.cursor = 'not-allowed';
             });
+            
+            // Show "Thinking..." indicator
+            const responseBubble = document.getElementById('responseBubble');
+            const responseText = document.getElementById('responseText');
+            const responseMeta = document.getElementById('responseMeta');
+            if (responseBubble && responseText) {
+                responseText.textContent = 'Berpikir... / Thinking...';
+                if (responseMeta) responseMeta.textContent = '';
+                responseBubble.style.display = 'block';
+            }
 
             // Update stats locally
             updateStats(action);
@@ -3065,12 +3100,20 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
 
             document.getElementById('currentMood').textContent = mood;
             document.getElementById('interactMood').textContent = mood;
+            
+            // Sync mood to pet view
+            const petViewMood = document.getElementById('petViewMood');
+            if (petViewMood) petViewMood.textContent = mood;
 
             // Update stat displays
+            document.getElementById('statCuteness').style.width = `${state.currentStats.cuteness}%`;
+            document.getElementById('valCuteness').textContent = state.currentStats.cuteness;
             document.getElementById('statEnergy').style.width = `${state.currentStats.energy}%`;
             document.getElementById('valEnergy').textContent = state.currentStats.energy;
             document.getElementById('statMischief').style.width = `${state.currentStats.mischief}%`;
             document.getElementById('valMischief').textContent = state.currentStats.mischief;
+            document.getElementById('statWisdom').style.width = `${state.currentStats.wisdom}%`;
+            document.getElementById('valWisdom').textContent = state.currentStats.wisdom;
             document.getElementById('statLoyalty').style.width = `${state.currentStats.loyalty}%`;
             document.getElementById('valLoyalty').textContent = state.currentStats.loyalty;
         }
@@ -3192,6 +3235,9 @@ Respond in this JSON format:
             if (data.newMood) {
                 document.getElementById('currentMood').textContent = data.newMood;
                 document.getElementById('interactMood').textContent = data.newMood;
+                // Sync mood to pet view
+                const petViewMood = document.getElementById('petViewMood');
+                if (petViewMood) petViewMood.textContent = data.newMood;
             }
             
             // Apply stat changes if provided
@@ -3291,7 +3337,7 @@ Respond in this JSON format:
             }
             
             // Test 4: Required Elements
-            const requiredElements = ['hero', 'apiKey', 'upload', 'form', 'generating', 'profile', 'interact', 'certificate', 'share'];
+            const requiredElements = ['hero', 'apiKey', 'upload', 'form', 'generating', 'profile', 'petView', 'certificate', 'share'];
             const missing = requiredElements.filter(id => !document.getElementById(id));
             console.log(`\n✅ Sections: ${requiredElements.length - missing.length}/${requiredElements.length} found`);
             if (missing.length) console.log('   Missing:', missing);
