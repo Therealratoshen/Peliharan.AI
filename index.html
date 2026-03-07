@@ -321,18 +321,19 @@
         }
 
         .hero-logo {
-            width: 280px;
-            height: 180px;
+            width: 320px;
+            height: 220px;
             margin-bottom: 24px;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: visible;
         }
         
         .pet-character-wrapper {
-            width: 180px;
-            height: 180px;
+            width: 200px;
+            height: 200px;
             will-change: transform;
             transition: transform 0.1s ease-out;
         }
@@ -378,11 +379,11 @@
         }
         
         @keyframes petWalkAround {
-            0% { transform: translateX(-40px); }
-            25% { transform: translateX(40px); }
-            50% { transform: translateX(40px); }
-            75% { transform: translateX(-40px); }
-            100% { transform: translateX(-40px); }
+            0% { transform: translateX(-25px); }
+            25% { transform: translateX(25px); }
+            50% { transform: translateX(25px); }
+            75% { transform: translateX(-25px); }
+            100% { transform: translateX(-25px); }
         }
         
         @keyframes headTilt {
@@ -2351,15 +2352,15 @@
                 
                 if (petFollowMode) {
                     // Pet follows cursor
-                    petX += (mouseX * 0.3 - petX) * 0.1;
-                    petY += (mouseY * 0.3 - petY) * 0.1;
+                    petX += (mouseX * 0.2 - petX) * 0.1;
+                    petY += (mouseY * 0.2 - petY) * 0.1;
                     petWrapper.style.transform = `translate(${petX}px, ${petY}px)`;
                 } else {
                     // Pet avoids cursor
                     const distance = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
                     if (distance < 150) {
-                        const avoidX = -(mouseX / distance) * 30;
-                        const avoidY = -(mouseY / distance) * 30;
+                        const avoidX = -(mouseX / distance) * 20;
+                        const avoidY = -(mouseY / distance) * 20;
                         petX += (avoidX - petX) * 0.1;
                         petY += (avoidY - petY) * 0.1;
                         petWrapper.style.transform = `translate(${petX}px, ${petY}px)`;
