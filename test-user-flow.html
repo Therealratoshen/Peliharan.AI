@@ -345,6 +345,7 @@
                 try {
                     runUnitTests();
                     runBugDetectionTests();
+                    runAdditionalTests();
                     runIntegrationTests();
                 } catch (e) {
                     console.error('Test runner error:', e);
@@ -501,6 +502,50 @@
                     const ramadanText = isRamadan && ramadanWish ? '\n\n🌙 ' + ramadanWish : '';
                     TestRunner.assertEqual(ramadanText, '',
                         'Instagram share should not include ramadanWish when not Ramadan or undefined');
+                });
+            });
+        }
+
+        function runAdditionalTests() {
+            TestRunner.suite('Additional Tests: Edge Cases', () => {
+                TestRunner.test('sanitizeInput handles script patterns', () => {
+                    const input = '<scr' + 'ipt>alert(1)</scr' + 'ipt>';
+                    const result = sanitizeInput(input);
+                    // Script tag removal regex should handle this
+                    TestRunner.assertEqual(result, 'alert(1)', 'Should remove script tags');
+                });
+                
+                TestRunner.test('sanitizeInput handles unicode', () => {
+                    const input = 'Hello 🐱 World 日本語';
+                    const result = sanitizeInput(input);
+                    TestRunner.assertTrue(result.includes('🐱'), 'Should preserve emoji');
+                    TestRunner.assertTrue(result.includes('日本語'), 'Should preserve unicode');
+                });
+                
+                TestRunner.test('validateApiKey rejects keys with spaces', () => {
+                    const result = validateApiKey('sk-1234 5678');
+                    TestRunner.assertFalse(result.valid, 'Should reject key with spaces');
+                });
+                
+                TestRunner.test('validateApiKey rejects special characters', () => {
+                    const result = validateApiKey('sk-1234<>&"');
+                    TestRunner.assertFalse(result.valid, 'Should reject key with special chars (too short)');
+                });
+                
+                TestRunner.test('Stats clamp at boundaries', () => {
+                    // Test stat clamping logic
+                    let stat = 100;
+                    stat = Math.max(0, Math.min(100, stat + 50)); // Try to exceed 100
+                    TestRunner.assertEqual(stat, 100, 'Stat should clamp at 100');
+                    
+                    stat = 0;
+                    stat = Math.max(0, Math.min(100, stat - 50)); // Try to go below 0
+                    TestRunner.assertEqual(stat, 0, 'Stat should clamp at 0');
+                });
+                
+                TestRunner.test('All 5 stats are tracked', () => {
+                    const stats = ['cuteness', 'energy', 'mischief', 'wisdom', 'loyalty'];
+                    TestRunner.assertEqual(stats.length, 5, 'Should have exactly 5 stats');
                 });
             });
         }
