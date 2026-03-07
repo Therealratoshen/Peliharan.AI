@@ -2737,6 +2737,12 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             const btnOriginal = document.getElementById('btnOriginal');
             const btnAI = document.getElementById('btnAI');
             
+            // Guard against null profile
+            if (!profile) {
+                console.warn('toggleAvatarView: No profile available');
+                return;
+            }
+            
             // Clear avatar container
             avatar.innerHTML = '';
             
