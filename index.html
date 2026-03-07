@@ -333,8 +333,12 @@
         .pet-character-wrapper {
             width: 180px;
             height: 180px;
-            animation: petWalkAround 5s ease-in-out infinite;
             will-change: transform;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .pet-character-wrapper.idle {
+            animation: petWalkAround 5s ease-in-out infinite;
         }
         
         .pet-character {
@@ -2314,6 +2318,87 @@
             const message = currentLang === 'ID' ? 'Bahasa diubah ke Indonesia' : 'Language switched to English';
             showToast(message);
         }
+        
+        // Interactive pet mouse tracking
+        let petFollowMode = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        let petX = 0;
+        let petY = 0;
+        
+        function initPetInteraction() {
+            const heroLogo = document.querySelector('.hero-logo');
+            const petWrapper = document.querySelector('.pet-character-wrapper');
+            
+            if (!heroLogo || !petWrapper) return;
+            
+            // Start with idle animation
+            petWrapper.classList.add('idle');
+            
+            // Track mouse position
+            document.addEventListener('mousemove', (e) => {
+                const rect = heroLogo.getBoundingClientRect();
+                mouseX = e.clientX - rect.left - rect.width / 2;
+                mouseY = e.clientY - rect.top - rect.height / 2;
+                
+                // Remove idle animation when interacting
+                const distance = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+                if (distance < 200) {
+                    petWrapper.classList.remove('idle');
+                } else if (!petFollowMode && distance > 250) {
+                    petWrapper.classList.add('idle');
+                }
+                
+                if (petFollowMode) {
+                    // Pet follows cursor
+                    petX += (mouseX * 0.3 - petX) * 0.1;
+                    petY += (mouseY * 0.3 - petY) * 0.1;
+                    petWrapper.style.transform = `translate(${petX}px, ${petY}px)`;
+                } else {
+                    // Pet avoids cursor
+                    const distance = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+                    if (distance < 150) {
+                        const avoidX = -(mouseX / distance) * 30;
+                        const avoidY = -(mouseY / distance) * 30;
+                        petX += (avoidX - petX) * 0.1;
+                        petY += (avoidY - petY) * 0.1;
+                        petWrapper.style.transform = `translate(${petX}px, ${petY}px)`;
+                    } else {
+                        // Return to center
+                        petX += (0 - petX) * 0.05;
+                        petY += (0 - petY) * 0.05;
+                        petWrapper.style.transform = `translate(${petX}px, ${petY}px)`;
+                    }
+                }
+            });
+            
+            // Double click to toggle follow mode
+            heroLogo.addEventListener('dblclick', () => {
+                petFollowMode = !petFollowMode;
+                const message = petFollowMode 
+                    ? '🐱 Following you! / Mengikuti kamu!' 
+                    : '🐱 Avoiding cursor! / Menghindar kursor!';
+                showToast(message);
+            });
+            
+            // Single click for reaction
+            heroLogo.addEventListener('click', (e) => {
+                if (e.detail === 1) {
+                    // Single click - pet jumps
+                    petWrapper.style.transition = 'transform 0.2s ease';
+                    petWrapper.style.transform = `translate(${petX}px, ${petY - 20}px) scale(1.1)`;
+                    setTimeout(() => {
+                        petWrapper.style.transition = '';
+                        petWrapper.style.transform = `translate(${petX}px, ${petY}px)`;
+                    }, 200);
+                }
+            });
+        }
+        
+        // Initialize pet interaction when hero section is shown
+        document.addEventListener('DOMContentLoaded', () => {
+            initPetInteraction();
+        });
         
         // Show upload feedback message
         function showUploadMessage(message, type = 'info') {
