@@ -418,6 +418,49 @@
             color: var(--text-light);
             margin-bottom: 40px;
         }
+        
+        .hero-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .lang-switcher {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid var(--primary);
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(78, 205, 196, 0.2);
+        }
+        
+        .lang-switcher:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+        
+        .lang-switcher .lang-flag {
+            font-size: 1.2rem;
+        }
+        
+        .lang-switcher .lang-code {
+            font-weight: 700;
+        }
+        
+        .lang-switcher .lang-separator {
+            opacity: 0.5;
+            margin: 0 2px;
+        }
 
         .scroll-indicator {
             position: absolute;
@@ -1486,9 +1529,18 @@
                 <h1>Peliharaan AI</h1>
                 <p class="hero-tagline">Hewan peliharaanmu, hidup di dunia digital</p>
                 <p class="hero-subtitle">Your real pet. Digitally alive.</p>
-                <button class="btn btn-primary" onclick="showSection('apiKey')">
-                    Buat Kembaran Digital / Create Digital Twin
-                </button>
+                <div class="hero-actions">
+                    <button class="btn btn-primary" onclick="showSection('apiKey')">
+                        Buat Kembaran Digital / Create Digital Twin
+                    </button>
+                    <button class="lang-switcher" onclick="toggleLanguage()" title="Ganti Bahasa / Switch Language">
+                        <span class="lang-flag">🇮🇩</span>
+                        <span class="lang-code">ID</span>
+                        <span class="lang-separator">/</span>
+                        <span class="lang-flag">🇬🇧</span>
+                        <span class="lang-code">EN</span>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -2176,6 +2228,28 @@
                 input.type = 'password';
                 toggle.textContent = '👁️';
             }
+        }
+        
+        // Language state
+        let currentLang = 'ID';
+        
+        // Toggle language between Indonesian and English
+        function toggleLanguage() {
+            currentLang = currentLang === 'ID' ? 'EN' : 'ID';
+            
+            // Update UI elements based on language
+            const elements = document.querySelectorAll('[data-id], [data-en]');
+            elements.forEach(el => {
+                if (currentLang === 'ID' && el.dataset.id) {
+                    el.textContent = el.dataset.id;
+                } else if (currentLang === 'EN' && el.dataset.en) {
+                    el.textContent = el.dataset.en;
+                }
+            });
+            
+            // Show feedback
+            const message = currentLang === 'ID' ? 'Bahasa diubah ke Indonesia' : 'Language switched to English';
+            showToast(message);
         }
         
         // Show upload feedback message
