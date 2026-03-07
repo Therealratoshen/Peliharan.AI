@@ -2737,16 +2737,31 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             const btnOriginal = document.getElementById('btnOriginal');
             const btnAI = document.getElementById('btnAI');
             
+            // Clear avatar container
+            avatar.innerHTML = '';
+            
             if (view === 'ai' && profile.generatedImage) {
-                avatar.innerHTML = `<img src="${profile.generatedImage}" alt="${profile.twinName} AI" id="avatarImage">`;
+                // Show AI image using safe DOM manipulation
+                const img = document.createElement('img');
+                img.src = profile.generatedImage;
+                img.alt = sanitizeInput(profile.twinName) + ' AI';
+                img.id = 'avatarImage';
+                avatar.appendChild(img);
                 btnOriginal?.classList.remove('active');
                 btnAI?.classList.add('active');
             } else {
-                // Show original photo
+                // Show original photo using safe DOM manipulation
                 if (state.photos.length > 0) {
-                    avatar.innerHTML = `<img src="${state.photos[0]}" alt="${profile.twinName}" id="avatarImage">`;
+                    const img = document.createElement('img');
+                    img.src = state.photos[0];
+                    img.alt = sanitizeInput(profile.twinName);
+                    img.id = 'avatarImage';
+                    avatar.appendChild(img);
                 } else {
-                    avatar.innerHTML = `<span id="avatarEmoji">${profile.avatarEmoji || '🐱'}</span>`;
+                    const span = document.createElement('span');
+                    span.id = 'avatarEmoji';
+                    span.textContent = profile.avatarEmoji || '🐱';
+                    avatar.appendChild(span);
                 }
                 btnOriginal?.classList.add('active');
                 btnAI?.classList.remove('active');
@@ -2759,10 +2774,18 @@ For HYBRID FUSION: set isHybrid to true and hybridOrigins to ["animal1", "animal
             
             // Display uploaded photo as avatar (or emoji fallback)
             const avatarContainer = document.getElementById('twinAvatar');
+            avatarContainer.innerHTML = '';
             if (state.photos.length > 0) {
-                avatarContainer.innerHTML = `<img src="${state.photos[0]}" alt="${profile.twinName}" id="avatarImage">`;
+                const img = document.createElement('img');
+                img.src = state.photos[0];
+                img.alt = sanitizeInput(profile.twinName);
+                img.id = 'avatarImage';
+                avatarContainer.appendChild(img);
             } else {
-                avatarContainer.innerHTML = `<span id="avatarEmoji">${profile.avatarEmoji || '🐱'}</span>`;
+                const span = document.createElement('span');
+                span.id = 'avatarEmoji';
+                span.textContent = profile.avatarEmoji || '🐱';
+                avatarContainer.appendChild(span);
             }
             
             // Create photo gallery thumbnails
