@@ -708,21 +708,21 @@
         }
         
         .pet-view-image {
-            width: 80vw;
-            max-width: 500px;
+            width: 60vw;
+            max-width: 400px;
             aspect-ratio: 1;
             border-radius: 50%;
             overflow: hidden;
             box-shadow: 0 0 100px rgba(78, 205, 196, 0.5), 0 0 150px rgba(78, 205, 196, 0.3), 0 0 200px rgba(78, 205, 196, 0.1);
-            animation: petBreathing 3s ease-in-out infinite;
+            animation: petWalk 8s ease-in-out infinite, petBounce 0.6s ease-in-out infinite;
             border: 6px solid rgba(255,255,255,0.15);
             transition: transform 0.3s ease;
         }
         
         @media (min-width: 1024px) {
             .pet-view-image {
-                width: 50vw;
-                max-width: 600px;
+                width: 35vw;
+                max-width: 450px;
             }
         }
         
@@ -735,6 +735,21 @@
         @keyframes petBreathing {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.03); }
+        }
+        
+        @keyframes petWalk {
+            0% { transform: translateX(-30vw) scale(1); }
+            25% { transform: translateX(-10vw) scale(1.02); }
+            50% { transform: translateX(10vw) scale(1); }
+            75% { transform: translateX(30vw) scale(1.02); }
+            100% { transform: translateX(-30vw) scale(1); }
+        }
+        
+        @keyframes petBounce {
+            0%, 100% { transform: translateY(0); }
+            25% { transform: translateY(-20px); }
+            50% { transform: translateY(0); }
+            75% { transform: translateY(-15px); }
         }
         
         .pet-view-info {
